@@ -1,0 +1,62 @@
+{
+  "name": "speedkart",
+  "version": "1.0.0",
+  "description": "SpeedKart : course de karts 3D multijoueur entre potes, en pair-à-pair",
+  "main": "electron/main.js",
+  "private": true,
+  "author": "ImDarling-bit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ImDarling-bit/SpeedKart.git"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "desktop": "electron .",
+    "dist": "electron-builder --win --publish never",
+    "assets": "node scripts/extract-assets.js",
+    "vendor": "node scripts/vendor.js",
+    "setup": "npm run vendor && npm run assets",
+    "simulate": "node test/simulate.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.16",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "peerjs": "^1.5.5",
+    "three": "^0.180.0"
+  },
+  "build": {
+    "appId": "fr.speedkart.app",
+    "productName": "SpeedKart",
+    "files": [
+      "electron/**",
+      "public/**",
+      "server.js",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "SpeedKart-Setup-${version}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ImDarling-bit",
+      "repo": "SpeedKart",
+      "releaseType": "release"
+    }
+  }
+}

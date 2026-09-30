@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# Packs Kenney d'origine : déjà extraits dans public/assets (npm run assets pour régénérer).
+PACK_3d/

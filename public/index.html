@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#140a2e">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss: blob: data:; object-src 'none'; base-uri 'none'">
+  <title>SpeedKart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-screen="screen-home">
+  <canvas id="game"></canvas>
+
+  <!-- Accueil -->
+  <section class="screen" id="screen-home">
+    <div class="home-bg"></div>
+    <div class="brand">
+      <h1><span class="b1">Speed</span><span class="b2">Kart</span></h1>
+      <p class="tagline">Course de karts entre potes. 12 circuits, 29 véhicules, des carapaces plein la figure.</p>
+    </div>
+    <div class="card home-card">
+      <label class="label" for="nameInput">Ton pseudo</label>
+      <input id="nameInput" class="input" maxlength="16" autocomplete="nickname" placeholder="Pilote Fou">
+      <div class="row">
+        <button class="btn btn-primary" id="createBtn">Créer une partie</button>
+        <button class="btn btn-ghost" id="soloBtn">Jouer en solo</button>
+      </div>
+      <div class="divider"><span>ou rejoindre des amis</span></div>
+      <div class="row">
+        <input id="codeInput" class="input input-code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE">
+        <button class="btn btn-ghost" id="joinBtn">Rejoindre</button>
+      </div>
+      <p class="muted" id="homeStatus" aria-live="polite"></p>
+      <p class="error" id="homeError" role="alert"></p>
+    </div>
+  </section>
+
+  <!-- Salon -->
+  <section class="screen hidden" id="screen-lobby">
+    <header class="lobby-head">
+      <div class="logo-small"><span class="b1">Speed</span><span class="b2">Kart</span></div>
+      <div class="code-box">
+        <span class="eyebrow">Code</span>
+        <strong id="lobbyCode"></strong>
+      </div>
+      <div class="invite" id="inviteRow">
+        <input class="input" id="inviteLink" readonly>
+        <button class="btn btn-ghost btn-small" id="shareBtn">Partager</button>
+      </div>
+      <button class="btn btn-link" data-action="leave">Quitter</button>
+    </header>
+
+    <div class="lobby-grid">
+      <div class="col">
+        <div class="card">
+          <div class="card-head"><h2>Ton véhicule</h2><span class="muted" id="vehCat"></span></div>
+          <div class="veh-preview">
+            <canvas id="vehPreview"></canvas>
+            <div class="veh-name" id="vehName"></div>
+          </div>
+          <div class="stats" id="vehStats"></div>
+          <div class="chips" id="vehCats"></div>
+          <div class="veh-grid" id="vehGrid"></div>
+        </div>
+      </div>
+
+      <div class="col col-wide">
+        <div class="card">
+          <div class="card-head"><h2>Circuit</h2><span class="muted" id="trackDesc"></span></div>
+          <div class="track-grid" id="trackGrid"></div>
+        </div>
+        <div class="card settings">
+          <div class="set">
+            <span class="label">Tours</span>
+            <div class="seg">
+              <button data-set="laps" data-value="1">1</button><button data-set="laps" data-value="2">2</button>
+              <button data-set="laps" data-value="3">3</button><button data-set="laps" data-value="5">5</button>
+            </div>
+          </div>
+          <div class="set">
+            <span class="label">Cylindrée</span>
+            <div class="seg">
+              <button data-set="cc" data-value="50">50cc</button><button data-set="cc" data-value="100">100cc</button>
+              <button data-set="cc" data-value="150">150cc</button><button data-set="cc" data-value="200">200cc</button>
+            </div>
+          </div>
+          <div class="set">
+            <span class="label">Bots</span>
+            <div class="seg">
+              <button data-set="bots" data-value="false">Aucun</button><button data-set="bots" data-value="true">Compléter à 8</button>
+            </div>
+          </div>
+          <div class="set">
+            <span class="label">Niveau des bots</span>
+            <div class="seg">
+              <button data-set="difficulty" data-value="1">Facile</button><button data-set="difficulty" data-value="2">Normal</button><button data-set="difficulty" data-value="3">Difficile</button>
+            </div>
+          </div>
+          <div class="set">
+            <span class="label">Objets</span>
+            <div class="seg">
+              <button data-set="items" data-value="true">Oui</button><button data-set="items" data-value="false">Non</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card">
+          <div class="card-head"><h2>Pilotes</h2><span class="muted" id="lobbyCount"></span></div>
+          <ul class="player-list" id="lobbyPlayers"></ul>
+        </div>
+        <div class="card hidden" id="standingsCard">
+          <div class="card-head"><h2>Championnat</h2><button class="btn btn-link btn-tiny host-only" id="resetScoresBtn">Remettre à zéro</button></div>
+          <ol class="standings" id="standings"></ol>
+        </div>
+        <button class="btn btn-primary btn-big" id="startBtn">Lancer la course !</button>
+        <p class="muted center" id="lobbyHint"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Course -->
+  <section class="screen hidden" id="screen-race">
+    <div class="hud">
+      <div class="hud-tl">
+        <div class="hud-pos"><span id="hudPos">1</span><sup id="hudPosSuf">er</sup><small id="hudPosOf">/8</small></div>
+        <div class="hud-lap">Tour <b id="hudLap">1</b>/<span id="hudLaps">3</span></div>
+        <div class="hud-time" id="hudTime">0:00.000</div>
+        <div class="hud-track" id="hudTrack"></div>
+      </div>
+      <div class="hud-tr">
+        <div class="item-slot" id="hudItem"></div>
+        <div class="item-meta"><span id="hudItemCount"></span><span id="hudItemName"></span></div>
+      </div>
+      <ol class="hud-ranks" id="hudRanks"></ol>
+      <canvas class="hud-map" id="hudMap" width="190" height="190"></canvas>
+      <div class="hud-br">
+        <div class="hud-drift" id="hudDrift"><i></i><i></i><i></i></div>
+        <div class="hud-speed"><b id="hudSpeed">0</b><small>km/h</small></div>
+      </div>
+      <div class="hud-center" id="hudCenter"></div>
+      <div class="hud-msg" id="hudMsg"></div>
+      <div class="hud-wrong hidden" id="hudWrong">↩ MAUVAIS SENS</div>
+      <div class="hud-flash" id="hudFlash"></div>
+      <button class="hud-quit" id="quitRaceBtn" aria-label="Quitter la course">✕</button>
+      <div class="hud-loading" id="hudLoading">
+        <div class="load-title" id="hudLoadText"></div>
+        <div class="load-bar"><i id="hudLoadBar"></i></div>
+        <p class="muted">En attente des autres pilotes...</p>
+      </div>
+      <div class="touch hidden" id="touchPad">
+        <div class="touch-left">
+          <button data-touch="left">◀</button><button data-touch="right">▶</button>
+        </div>
+        <div class="touch-right">
+          <button data-touch="item" class="t-item">🎁</button>
+          <button data-touch="drift" class="t-drift">DRIFT</button>
+          <button data-touch="brake" class="t-brake">▼</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Résultats -->
+  <section class="screen hidden" id="screen-results">
+    <div class="results">
+      <p class="eyebrow" id="resTrack"></p>
+      <h2 class="res-title" id="resTitle">Résultats</h2>
+      <ol class="res-list" id="resList"></ol>
+      <div class="res-actions" id="resActions">
+        <button class="btn btn-primary" id="nextBtn">Circuit suivant</button>
+        <button class="btn btn-ghost" id="retryBtn">Rejouer ce circuit</button>
+        <button class="btn btn-ghost" id="toLobbyBtn">Retour au salon</button>
+      </div>
+      <p class="muted center" id="resHint"></p>
+      <button class="btn btn-link" data-action="leave">Quitter la partie</button>
+    </div>
+  </section>
+
+  <!-- Barre flottante : volume + aide -->
+  <div class="corner">
+    <label class="vol" title="Volume">🔊<input type="range" id="volumeRange" min="0" max="100"></label>
+    <button class="help-fab" id="helpBtn" aria-label="Commandes">?</button>
+  </div>
+
+  <div class="modal hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="helpTitle">Commandes</h2>
+        <button class="icon-btn" id="helpClose" aria-label="Fermer">✕</button>
+      </div>
+      <table class="keys">
+        <tr><th>Accélérer</th><td><kbd>↑</kbd> <kbd>Z</kbd>/<kbd>W</kbd> · manette <kbd>A</kbd></td></tr>
+        <tr><th>Freiner / reculer</th><td><kbd>↓</kbd> <kbd>S</kbd> · manette <kbd>B</kbd></td></tr>
+        <tr><th>Tourner</th><td><kbd>←</kbd> <kbd>→</kbd> <kbd>Q</kbd>/<kbd>A</kbd> <kbd>D</kbd> · stick gauche</td></tr>
+        <tr><th>Déraper / sauter</th><td><kbd>Espace</kbd> <kbd>Maj</kbd> · manette <kbd>RB</kbd>/<kbd>RT</kbd></td></tr>
+        <tr><th>Utiliser l'objet</th><td><kbd>E</kbd> <kbd>F</kbd> <kbd>Ctrl</kbd> · manette <kbd>LB</kbd>/<kbd>LT</kbd></td></tr>
+        <tr><th>Regarder / lancer derrière</th><td><kbd>C</kbd> (maintenir) · manette <kbd>Y</kbd></td></tr>
+      </table>
+      <h3>Astuces</h3>
+      <ul class="tips">
+        <li><b>Mini-turbo</b> : maintiens le dérapage dans un virage. Les étincelles passent du bleu à l'orange puis au violet : relâche pour un turbo de plus en plus long.</li>
+        <li><b>Figure</b> : appuie sur dérapage juste après un tremplin pour un petit turbo à l'atterrissage.</li>
+        <li><b>Départ turbo</b> : accélère juste après le « 2 » du compte à rebours.</li>
+        <li><b>Tapis orange</b> : turbo gratuit. <b>Hors-piste</b> : ça freine, sauf en turbo.</li>
+        <li>Les objets dépendent de ta place : plus tu es loin, plus ils sont puissants (étoile, éclair, triple turbo).</li>
+        <li>Les karts lourds poussent les légers ; les légers accélèrent et tournent mieux.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/peerjs.min.js"></script>
+  <script src="config.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
