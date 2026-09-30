@@ -34,7 +34,21 @@ jobs:
       - name: Circuits et partie simulés
         run: npm run simulate
 
-      - name: Construction et publication
+      # La release est créée d'avance en brouillon : sinon electron-builder envoie ses fichiers
+      # en parallèle et chaque envoi crée sa propre release (deux « v1.0.0 » à moitié remplies).
+      - name: Release en brouillon
+        shell: bash
+        run: gh release create "$GITHUB_REF_NAME" --draft --title "${GITHUB_REF_NAME#v}" --notes ""
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construction et envoi
         run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publication de la release
+        shell: bash
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
