@@ -1,6 +1,8 @@
 # SpeedKart
 
-Course de karts 3D entre potes, dans l'esprit de Mario Kart : 12 circuits, 29 véhicules, objets, dérapages et mini-turbos, tremplins, tapis de vitesse, bots.
+Jeu de voitures 3D entre potes, dans l'esprit de Mario Kart et Rocket League : 14 circuits (dont 9 avec loopings), 29 véhicules, objets, pouvoirs aléatoires, dérapages et mini-turbos, et trois modes en arène : auto-tamponneuses, foot turbo et bataille de ballons. Des bots complètent les parties.
+
+**Pas à pas pour installer et jouer : [le tuto](https://imdarling-bit.github.io/SpeedKart/tuto.html)** (aussi dans `public/tuto.html`).
 
 La partie tourne en **pair-à-pair**, sur le même modèle que BlindYourFriends : l'hôte fait tourner le moteur sur sa machine, chaque ami s'y connecte directement (WebRTC via PeerJS). Aucun serveur de jeu à héberger.
 
@@ -18,46 +20,59 @@ L'hôte peut aussi jouer depuis la page, mais le lanceur est plus confortable (p
 
 ## Commandes
 
-| Action | Clavier | Manette |
-|---|---|---|
-| Accélérer | ↑ / Z / W | A |
-| Freiner, reculer | ↓ / S | B |
-| Tourner | ← → / Q D / A D | stick gauche, croix |
-| Déraper, sauter | Espace / Maj | RB / RT |
-| Objet | E / F / Ctrl | LB / LT |
-| Regarder, lancer derrière | C (maintenir) | Y |
+| Action | Course | Arènes | Manette |
+|---|---|---|---|
+| Avancer, freiner | ↑ ↓ / Z S / W S | ↑ ↓ / Z S | course : A, B · arènes : RT, LT |
+| Tourner | ← → / Q D / A D | idem | stick gauche, croix |
+| Déraper | Espace / Maj | – | RB / RT |
+| Sauter (2× : figure) | – | Espace | A |
+| Turbo | – | Maj | B |
+| Glisser, vrille en l'air | – | X / Alt | X |
+| Caméra ballon (foot) | – | C | Y |
+| Objet | E / F / Ctrl | E / F | LB |
+| Pouvoir spécial | R | R | croix ↑ |
+| Klaxon | H | H | clic stick gauche |
+| Emotes | 1 à 6 | 1 à 6 | croix ↓ |
 
 Sur téléphone, des boutons tactiles apparaissent (l'accélération est automatique).
 
+## Modes
+
+- **Course** : 14 circuits. Options **pouvoirs aléatoires** (24 pouvoirs, un nouveau tiré à chaque usage, sans répétition rapprochée : géant, échange de place, téléportation, gel, encre, comète sur le premier...) et **physique tamponneuse** (chocs qui envoient en tonneau, gravité qui ondule).
+- **Auto-tamponneuses** : plateforme flottante ; +1 point par adversaire retourné, +2 par éjection. La gravité change toutes les 14 s (lunaire, écrasante, penchée, folle).
+- **Foot turbo** : façon Rocket League. Bleus contre Orange (1c1 à 4c4), ballon géant, saut, double saut et figures, turbo et pastilles, conduite sur les murs et le plafond, prolongation en but en or.
+- **Bataille de ballons** : 1 à 5 ballons chacun, objets dans l'arène, dernier debout gagne. Pouvoirs en option.
+
 ## Contenu
 
-**Circuits** (`public/js/data/tracks.js`) : Prairie Kenney, Grand Prix, Centre-Ville, Zone Industrielle (huit avec pont), Toboggan de Marbre, Îles Flottantes, Pic Enneigé, Dunes Dorées, Autoroute Néon, Chantier Infernal, Briques Folies, Route Arc-en-ciel. Trois circuits n'ont pas de barrières : on peut tomber.
+**Circuits** (`public/js/data/tracks.js`) : Prairie Kenney, Grand Prix, Centre-Ville, Zone Industrielle (huit avec pont), Toboggan de Marbre, Îles Flottantes, Pic Enneigé, Dunes Dorées, Autoroute Néon, Chantier Infernal, Briques Folies, Route Arc-en-ciel, Grand Huit, Hyperloop. Trois circuits n'ont pas de barrières : on peut tomber. Les loopings demandent de l'élan : un tapis de vitesse est placé juste avant.
 
-**Véhicules** (`public/js/data/vehicles.js`) : 5 karts, 6 bolides de course, 2 sportives, 6 voitures de ville, 5 utilitaires, 5 poids lourds. Chacun a sa vitesse, son accélération, sa maniabilité et son poids.
+**Véhicules** (`public/js/data/vehicles.js`) : 5 karts, 6 bolides de course, 2 sportives, 6 voitures de ville, 5 utilitaires, 5 poids lourds. Chacun a sa vitesse, son accélération, sa maniabilité, son poids et son bruit de moteur (kart, sportive, voiture, poids lourd). Chaque joueur choisit sa couleur et son klaxon.
 
 **Objets** : turbo, triple turbo, banane, carapace verte, carapace rouge (à tête chercheuse), bombe, étoile, bouclier, éclair. Le tirage dépend de la place.
 
-**Réglages de l'hôte** : circuit (ou aléatoire), 1 à 5 tours, 50cc à 200cc, bots (aucun ou compléter à 8) et leur niveau, objets oui/non. Les points s'additionnent d'une course à l'autre (championnat).
+**Réglages de l'hôte** : mode, circuit (ou aléatoire), tours, cylindrée, durée, taille des équipes, nombre de ballons, bots et leur niveau, objets, pouvoirs, physique tamponneuse. Les points s'additionnent d'une partie à l'autre (championnat).
 
 ## Ajouter un circuit
 
-Ajouter une entrée dans `TRACKS` : une boucle de points `[x, z, hauteur]` (agrandie de 25 %), un thème (`public/js/data/themes.js`), et les positions des tremplins, tapis et boîtes. Puis vérifier :
+Ajouter une entrée dans `TRACKS` : une boucle de points `[x, z, hauteur]` (agrandie de 25 %), un thème (`public/js/data/themes.js`), et les positions des tremplins, tapis, boîtes et loopings (`loops: [[position, rayon]]`, sur une ligne droite d'environ 200 m). Puis vérifier :
 
 ```bash
 npm run simulate           # tous les circuits
 npm run simulate -- monid  # un seul
 ```
 
-La simulation vérifie que le tracé ne se chevauche pas et que 8 bots bouclent 3 tours sans rester bloqués.
+La simulation vérifie que le tracé ne se chevauche pas, que les loopings sont bien placés (élan avant, rien dedans) et que 8 bots bouclent 3 tours sans rester bloqués. Elle joue aussi une course avec pouvoirs et chaos, et les trois modes en arène jusqu'au bout (`npm run simulate -- race` ou `-- arena` pour ne lancer qu'une partie).
 
 ## Comment ça marche
 
-- `public/js/room.js` : le moteur de l'hôte (salon, départ, bots, boîtes, objets lancés, classement, points). Il n'a aucune dépendance au navigateur et tourne aussi sous Node.
-- `public/js/net.js` : le transport PeerJS. L'id de l'hôte est `speedkart-<CODE>`. Chaque pilote envoie sa position 20 fois par seconde. L'hôte renvoie à tous un instantané (karts, objets, boîtes) 20 fois par seconde, plus les événements (coups, explosions, arrivées).
-- `public/js/kart.js` : la physique du kart, la même pour les joueurs et les bots.
-- `public/js/track.js` : la géométrie du circuit (Catmull-Rom rééchantillonnée), utilisée pour la physique, l'IA et le rendu.
-- `public/js/race.js` : la course côté joueur. On pilote en local (pas de latence dans les commandes). Les autres karts sont affichés avec 110 ms de retard et interpolés.
-- `public/js/world.js`, `kartview.js`, `fx.js` : le rendu three.js.
+- `public/js/room.js` : le cœur de l'hôte (salon, profils, réglages, chargement, résultats, points). Chaque mode a son module : `modes/racegame.js` (course, objets, pouvoirs) et `modes/arenagame.js` (tamponneuse, foot, bataille). Rien ne dépend du navigateur : tout tourne aussi sous Node.
+- `public/js/net.js` : le transport PeerJS. L'id de l'hôte est `speedkart-<CODE>`. Chaque pilote envoie sa position 20 fois par seconde. L'hôte renvoie à tous un instantané (véhicules, ballon, objets, boîtes) 20 fois par seconde, plus les événements (coups, buts, pouvoirs, klaxons, emotes).
+- `public/js/kart.js` : la physique arcade des karts (course), loopings et effets des pouvoirs compris.
+- `public/js/car3d.js` : la physique 3D des arènes (corps rigide, roues qui collent aux murs, saut, figures, ballon). Les arènes sont décrites par des fonctions de distance (`arena.js`).
+- `public/js/track.js` : la géométrie du circuit (Catmull-Rom rééchantillonnée, loopings insérés), utilisée pour la physique, l'IA et le rendu.
+- `public/js/race.js` et `arenaplay.js` : la partie côté joueur. On pilote en local (pas de latence dans les commandes). Les autres sont affichés avec ~100 ms de retard et interpolés. Au foot, le ballon est aussi simulé en local pour que nos frappes soient immédiates.
+- `public/js/world.js`, `arenaview.js`, `kartview.js`, `fx.js` : le rendu three.js. `audio.js` : tous les sons, synthétisés (moteur avec régime et boîte de vitesses).
 - `public/js/ticker.js` : l'horloge de l'hôte, dans un Web Worker, pour que les bots et les objets continuent de tourner si l'hôte change d'onglet.
 
 Chaque joueur calcule lui-même ses tours et ses collisions, et l'hôte lui fait confiance. C'est fait pour jouer entre amis, pas contre des tricheurs.

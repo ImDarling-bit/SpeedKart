@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#140a2e">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss: blob: data:; object-src 'none'; base-uri 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss: blob: data:; object-src 'none'; base-uri 'none'">
   <title>SpeedKart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
     <div class="home-bg"></div>
     <div class="brand">
       <h1><span class="b1">Speed</span><span class="b2">Kart</span></h1>
-      <p class="tagline">Course de karts entre potes. 12 circuits, 29 véhicules, des carapaces plein la figure.</p>
+      <p class="tagline">Courses, loopings, tamponneuses, foot motorisé et bataille de ballons, entre potes.</p>
     </div>
     <div class="card home-card">
       <label class="label" for="nameInput">Ton pseudo</label>
@@ -36,6 +36,7 @@
       <p class="muted" id="homeStatus" aria-live="polite"></p>
       <p class="error" id="homeError" role="alert"></p>
     </div>
+    <p class="home-help"><a href="tuto.html" target="_blank" rel="noopener">Première fois ? Le tuto pas à pas</a></p>
   </section>
 
   <!-- Salon -->
@@ -53,6 +54,8 @@
       <button class="btn btn-link" data-action="leave">Quitter</button>
     </header>
 
+    <div class="mode-grid" id="modeGrid"></div>
+
     <div class="lobby-grid">
       <div class="col">
         <div class="card">
@@ -65,32 +68,67 @@
           <div class="chips" id="vehCats"></div>
           <div class="veh-grid" id="vehGrid"></div>
         </div>
+        <div class="card">
+          <div class="card-head"><h2>Personnalisation</h2></div>
+          <span class="label">Couleur</span>
+          <div class="color-row" id="colorRow"></div>
+          <span class="label">Klaxon <small class="muted">(touche H en jeu)</small></span>
+          <div class="row horn-row">
+            <select class="input" id="hornSelect"></select>
+            <button class="btn btn-ghost btn-small" id="hornTest">📯 Tester</button>
+          </div>
+          <div class="only-rocket">
+            <span class="label">Ton équipe</span>
+            <div class="seg">
+              <button data-team="auto">Auto</button><button data-team="blue" class="t-blue">Bleus</button><button data-team="orange" class="t-orange">Orange</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="col col-wide">
-        <div class="card">
+        <div class="card only-race">
           <div class="card-head"><h2>Circuit</h2><span class="muted" id="trackDesc"></span></div>
           <div class="track-grid" id="trackGrid"></div>
         </div>
         <div class="card settings">
-          <div class="set">
+          <div class="set only-race">
             <span class="label">Tours</span>
             <div class="seg">
               <button data-set="laps" data-value="1">1</button><button data-set="laps" data-value="2">2</button>
               <button data-set="laps" data-value="3">3</button><button data-set="laps" data-value="5">5</button>
             </div>
           </div>
-          <div class="set">
+          <div class="set only-race">
             <span class="label">Cylindrée</span>
             <div class="seg">
               <button data-set="cc" data-value="50">50cc</button><button data-set="cc" data-value="100">100cc</button>
               <button data-set="cc" data-value="150">150cc</button><button data-set="cc" data-value="200">200cc</button>
             </div>
           </div>
+          <div class="set only-rocket">
+            <span class="label">Équipes</span>
+            <div class="seg">
+              <button data-set="teamSize" data-value="1">1 c 1</button><button data-set="teamSize" data-value="2">2 c 2</button>
+              <button data-set="teamSize" data-value="3">3 c 3</button><button data-set="teamSize" data-value="4">4 c 4</button>
+            </div>
+          </div>
+          <div class="set only-arena">
+            <span class="label">Durée</span>
+            <div class="seg">
+              <button data-set="matchTime" data-value="2">2 min</button><button data-set="matchTime" data-value="3">3 min</button><button data-set="matchTime" data-value="5">5 min</button>
+            </div>
+          </div>
+          <div class="set only-battle">
+            <span class="label">Ballons</span>
+            <div class="seg">
+              <button data-set="balloons" data-value="1">1</button><button data-set="balloons" data-value="3">3</button><button data-set="balloons" data-value="5">5</button>
+            </div>
+          </div>
           <div class="set">
             <span class="label">Bots</span>
             <div class="seg">
-              <button data-set="bots" data-value="false">Aucun</button><button data-set="bots" data-value="true">Compléter à 8</button>
+              <button data-set="bots" data-value="false">Aucun</button><button data-set="bots" data-value="true">Compléter</button>
             </div>
           </div>
           <div class="set">
@@ -99,10 +137,22 @@
               <button data-set="difficulty" data-value="1">Facile</button><button data-set="difficulty" data-value="2">Normal</button><button data-set="difficulty" data-value="3">Difficile</button>
             </div>
           </div>
-          <div class="set">
+          <div class="set only-race">
             <span class="label">Objets</span>
             <div class="seg">
               <button data-set="items" data-value="true">Oui</button><button data-set="items" data-value="false">Non</button>
+            </div>
+          </div>
+          <div class="set only-powers">
+            <span class="label">Pouvoirs aléatoires 🎲</span>
+            <div class="seg">
+              <button data-set="powers" data-value="false">Non</button><button data-set="powers" data-value="true">Oui</button>
+            </div>
+          </div>
+          <div class="set only-race">
+            <span class="label">Physique tamponneuse 💥</span>
+            <div class="seg">
+              <button data-set="chaos" data-value="false">Non</button><button data-set="chaos" data-value="true">Oui</button>
             </div>
           </div>
         </div>
@@ -123,30 +173,45 @@
     </div>
   </section>
 
-  <!-- Course -->
+  <!-- Partie -->
   <section class="screen hidden" id="screen-race">
     <div class="hud">
       <div class="hud-tl">
-        <div class="hud-pos"><span id="hudPos">1</span><sup id="hudPosSuf">er</sup><small id="hudPosOf">/8</small></div>
-        <div class="hud-lap">Tour <b id="hudLap">1</b>/<span id="hudLaps">3</span></div>
-        <div class="hud-time" id="hudTime">0:00.000</div>
+        <div class="race-only">
+          <div class="hud-pos"><span id="hudPos">1</span><sup id="hudPosSuf">er</sup><small id="hudPosOf">/8</small></div>
+          <div class="hud-lap">Tour <b id="hudLap">1</b>/<span id="hudLaps">3</span></div>
+          <div class="hud-time" id="hudTime">0:00.000</div>
+        </div>
+        <div class="arena-only hud-clock" id="hudClock">3:00</div>
         <div class="hud-track" id="hudTrack"></div>
       </div>
+      <div class="hud-score rocket-only">
+        <span class="sc-blue" id="hudScoreBlue">0</span><span class="sc-sep">–</span><span class="sc-orange" id="hudScoreOrange">0</span>
+      </div>
       <div class="hud-tr">
-        <div class="item-slot" id="hudItem"></div>
-        <div class="item-meta"><span id="hudItemCount"></span><span id="hudItemName"></span></div>
+        <div class="items-only">
+          <div class="item-slot" id="hudItem"></div>
+          <div class="item-meta"><span id="hudItemCount"></span><span id="hudItemName"></span></div>
+        </div>
+        <div class="power-slot hidden" id="hudPower">
+          <span id="hudPowerIcon"></span><b id="hudPowerCd"></b>
+          <small><kbd>R</kbd> <span id="hudPowerName"></span></small>
+        </div>
       </div>
       <ol class="hud-ranks" id="hudRanks"></ol>
       <canvas class="hud-map" id="hudMap" width="190" height="190"></canvas>
       <div class="hud-br">
-        <div class="hud-drift" id="hudDrift"><i></i><i></i><i></i></div>
+        <div class="hud-drift race-only" id="hudDrift"><i></i><i></i><i></i></div>
+        <div class="hud-boost boost-only" id="hudBoost"><b id="hudBoostVal">33</b></div>
+        <div class="hud-grav bumper-only" id="hudGrav"><i>⬇</i><b id="hudGravVal">×1.0</b></div>
         <div class="hud-speed"><b id="hudSpeed">0</b><small>km/h</small></div>
       </div>
       <div class="hud-center" id="hudCenter"></div>
       <div class="hud-msg" id="hudMsg"></div>
       <div class="hud-wrong hidden" id="hudWrong">↩ MAUVAIS SENS</div>
+      <div class="hud-ink" id="hudInk"></div>
       <div class="hud-flash" id="hudFlash"></div>
-      <button class="hud-quit" id="quitRaceBtn" aria-label="Quitter la course">✕</button>
+      <button class="hud-quit" id="quitRaceBtn" aria-label="Quitter la partie">✕</button>
       <div class="hud-loading" id="hudLoading">
         <div class="load-title" id="hudLoadText"></div>
         <div class="load-bar"><i id="hudLoadBar"></i></div>
@@ -157,8 +222,11 @@
           <button data-touch="left">◀</button><button data-touch="right">▶</button>
         </div>
         <div class="touch-right">
+          <button data-touch="power" class="t-power">🎲</button>
           <button data-touch="item" class="t-item">🎁</button>
-          <button data-touch="drift" class="t-drift">DRIFT</button>
+          <button data-touch="drift" class="t-drift s-race">DRIFT</button>
+          <button data-touch="jump" class="t-drift s-car">SAUT</button>
+          <button data-touch="boost" class="t-boost s-car">🔥</button>
           <button data-touch="brake" class="t-brake">▼</button>
         </div>
       </div>
@@ -181,9 +249,10 @@
     </div>
   </section>
 
-  <!-- Barre flottante : volume + aide -->
+  <!-- Barre flottante : volumes + aide -->
   <div class="corner">
-    <label class="vol" title="Volume">🔊<input type="range" id="volumeRange" min="0" max="100"></label>
+    <label class="vol" title="Volume général">🔊<input type="range" id="volumeRange" min="0" max="100"></label>
+    <label class="vol" title="Volume du moteur">🏎️<input type="range" id="engineRange" min="0" max="100"></label>
     <button class="help-fab" id="helpBtn" aria-label="Commandes">?</button>
   </div>
 
@@ -193,23 +262,40 @@
         <h2 id="helpTitle">Commandes</h2>
         <button class="icon-btn" id="helpClose" aria-label="Fermer">✕</button>
       </div>
+      <h3>Course</h3>
       <table class="keys">
         <tr><th>Accélérer</th><td><kbd>↑</kbd> <kbd>Z</kbd>/<kbd>W</kbd> · manette <kbd>A</kbd></td></tr>
         <tr><th>Freiner / reculer</th><td><kbd>↓</kbd> <kbd>S</kbd> · manette <kbd>B</kbd></td></tr>
         <tr><th>Tourner</th><td><kbd>←</kbd> <kbd>→</kbd> <kbd>Q</kbd>/<kbd>A</kbd> <kbd>D</kbd> · stick gauche</td></tr>
         <tr><th>Déraper / sauter</th><td><kbd>Espace</kbd> <kbd>Maj</kbd> · manette <kbd>RB</kbd>/<kbd>RT</kbd></td></tr>
-        <tr><th>Utiliser l'objet</th><td><kbd>E</kbd> <kbd>F</kbd> <kbd>Ctrl</kbd> · manette <kbd>LB</kbd>/<kbd>LT</kbd></td></tr>
+        <tr><th>Objet</th><td><kbd>E</kbd> <kbd>F</kbd> <kbd>Ctrl</kbd> · manette <kbd>LB</kbd>/<kbd>LT</kbd></td></tr>
         <tr><th>Regarder / lancer derrière</th><td><kbd>C</kbd> (maintenir) · manette <kbd>Y</kbd></td></tr>
+      </table>
+      <h3>Arènes (tamponneuse, foot, bataille)</h3>
+      <table class="keys">
+        <tr><th>Avancer / reculer</th><td><kbd>↑</kbd>/<kbd>Z</kbd> <kbd>↓</kbd>/<kbd>S</kbd> · manette <kbd>RT</kbd>/<kbd>LT</kbd></td></tr>
+        <tr><th>Sauter (2× : figure)</th><td><kbd>Espace</kbd> · manette <kbd>A</kbd></td></tr>
+        <tr><th>Turbo</th><td><kbd>Maj</kbd> · manette <kbd>B</kbd></td></tr>
+        <tr><th>Glisser / vrille en l'air</th><td><kbd>X</kbd> <kbd>Alt</kbd> · manette <kbd>X</kbd></td></tr>
+        <tr><th>Caméra ballon (foot)</th><td><kbd>C</kbd> · manette <kbd>Y</kbd></td></tr>
+        <tr><th>Objet (bataille)</th><td><kbd>E</kbd> <kbd>F</kbd> · manette <kbd>LB</kbd></td></tr>
+      </table>
+      <h3>Partout</h3>
+      <table class="keys">
+        <tr><th>Pouvoir spécial</th><td><kbd>R</kbd> · manette croix ↑</td></tr>
+        <tr><th>Klaxon</th><td><kbd>H</kbd> · manette clic du stick gauche</td></tr>
+        <tr><th>Emotes</th><td><kbd>1</kbd> 😂 <kbd>2</kbd> 😡 <kbd>3</kbd> 👍 <kbd>4</kbd> GG <kbd>5</kbd> 😱 <kbd>6</kbd> 🔥</td></tr>
       </table>
       <h3>Astuces</h3>
       <ul class="tips">
         <li><b>Mini-turbo</b> : maintiens le dérapage dans un virage. Les étincelles passent du bleu à l'orange puis au violet : relâche pour un turbo de plus en plus long.</li>
+        <li><b>Loopings</b> : prends le tapis orange juste avant, sinon tu n'auras pas l'élan pour passer en haut.</li>
         <li><b>Figure</b> : appuie sur dérapage juste après un tremplin pour un petit turbo à l'atterrissage.</li>
         <li><b>Départ turbo</b> : accélère juste après le « 2 » du compte à rebours.</li>
-        <li><b>Tapis orange</b> : turbo gratuit. <b>Hors-piste</b> : ça freine, sauf en turbo.</li>
-        <li>Les objets dépendent de ta place : plus tu es loin, plus ils sont puissants (étoile, éclair, triple turbo).</li>
-        <li>Les karts lourds poussent les légers ; les légers accélèrent et tournent mieux.</li>
+        <li><b>Foot</b> : saute deux fois en tenant une direction pour faire une figure qui frappe fort. Roule sur les murs pour reprendre le ballon.</li>
+        <li><b>Tamponneuse</b> : percute de côté pour retourner, et pousse vers le bord pour éjecter. Surveille la gravité !</li>
       </ul>
+      <p class="rules-more"><a href="tuto.html" target="_blank" rel="noopener">Le tuto complet : installation et lancement d'une partie</a></p>
     </div>
   </div>
 

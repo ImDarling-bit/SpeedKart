@@ -100,6 +100,17 @@ export function entityMesh(type) {
     bottom.position.y = 0.1;
     g.add(shell, rim, bottom);
     g.userData.spin = true;
+  } else if (type === 'crate') {
+    const box = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), mat('crate', { color: '#b07a3a', roughness: 0.8 }));
+    box.position.y = 1.2;
+    const band = new THREE.Mesh(new THREE.BoxGeometry(2.46, 0.4, 2.46), mat('crateBand', { color: '#6b4420' }));
+    band.position.y = 1.2;
+    g.add(box, band);
+  } else if (type === 'comet') {
+    const core = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12), mat('comet', { color: '#ffd27a', emissive: '#ff7a1f', emissiveIntensity: 2 }));
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: softDot(), color: '#ff9a3a', blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.setScalar(7);
+    g.add(core, glow);
   } else if (type === 'bomb') {
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.75, 16, 12), mat('bomb', { color: '#1b1b22', roughness: 0.3, metalness: 0.3 }));
     body.position.y = 0.75;

@@ -16,6 +16,7 @@ const files = [
   ['node_modules/three/examples/jsm/loaders/GLTFLoader.js', 'three/addons/loaders/GLTFLoader.js'],
   ['node_modules/three/examples/jsm/utils/BufferGeometryUtils.js', 'three/addons/utils/BufferGeometryUtils.js'],
   ['node_modules/three/examples/jsm/utils/SkeletonUtils.js', 'three/addons/utils/SkeletonUtils.js'],
+  ['node_modules/three/examples/jsm/geometries/RoundedBoxGeometry.js', 'three/addons/geometries/RoundedBoxGeometry.js'],
 ];
 
 for (const [from, to] of files) {

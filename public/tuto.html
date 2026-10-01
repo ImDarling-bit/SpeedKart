@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#140a2e">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+  <meta name="description" content="Installer SpeedKart et lancer une partie entre amis, étape par étape : lanceur Windows, code d'invitation, modes de jeu, commandes.">
+  <title>Tuto SpeedKart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="tuto">
+  <main>
+    <header class="tuto-head">
+      <a class="btn btn-ghost btn-small" href="./">Retour au jeu</a>
+      <h1><span class="b1">Speed</span><span class="b2">Kart</span></h1>
+      <p class="tagline">Le tuto : installer, créer une partie, inviter ses amis, jouer.</p>
+    </header>
+
+    <nav class="card tuto-toc" aria-label="Sommaire">
+      <p class="eyebrow">En 3 minutes</p>
+      <ol>
+        <li><a href="#besoin">Ce qu'il faut</a></li>
+        <li><a href="#installer">Installer le lanceur (l'hôte)</a></li>
+        <li><a href="#creer">Créer la partie et inviter</a></li>
+        <li><a href="#rejoindre">Rejoindre (les amis)</a></li>
+        <li><a href="#salon">Choisir le mode et son véhicule</a></li>
+        <li><a href="#commandes">Les commandes</a></li>
+        <li><a href="#modes">Les modes de jeu</a></li>
+        <li><a href="#problemes">En cas de souci</a></li>
+        <li><a href="#code">Installer depuis le code (avancé)</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section class="tuto-section" id="besoin">
+      <h2 class="title"><span class="step-num">1</span>Ce qu'il faut</h2>
+      <div class="role-grid">
+        <div class="card role">
+          <p class="eyebrow">L'hôte (une seule personne)</p>
+          <p>Un <strong>PC Windows</strong> avec internet et une carte graphique correcte. C'est lui qui fait tourner la partie (bots, objets, ballon) : il garde le jeu ouvert jusqu'à la fin.</p>
+        </div>
+        <div class="card role">
+          <p class="eyebrow">Les amis</p>
+          <p>Un <strong>PC</strong> (ou une tablette / un téléphone récent) avec un navigateur à jour (Chrome, Edge, Firefox) et internet. <strong>Rien à installer.</strong></p>
+        </div>
+      </div>
+      <p class="muted">De 1 à 8 pilotes, hôte compris. Les places libres sont complétées par des bots. Une manette (Xbox, PlayStation) est conseillée mais pas obligatoire.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="tuto-section" id="installer">
+      <h2 class="title"><span class="step-num">2</span>Installer le lanceur</h2>
+      <p class="muted">Uniquement pour l'hôte, et une seule fois : le lanceur se met ensuite à jour tout seul.</p>
+      <ol class="steps">
+        <li>
+          <p>Télécharge l'installeur <strong>SpeedKart-Setup</strong> (fichier .exe, environ 110 Mo) :</p>
+          <a class="btn btn-primary" href="https://github.com/ImDarling-bit/SpeedKart/releases/latest" target="_blank" rel="noopener">Télécharger le lanceur</a>
+        </li>
+        <li>
+          <p>Ouvre le fichier téléchargé. Windows peut afficher <em>« Windows a protégé votre ordinateur »</em> : le lanceur n'est pas signé par un éditeur payant, c'est normal.</p>
+          <div class="mock mock-smartscreen" aria-hidden="true">
+            <strong>Windows a protégé votre ordinateur</strong>
+            <span class="mock-link">Informations complémentaires</span>
+            <span class="mock-winbtn">Exécuter quand même</span>
+          </div>
+          <p>Clique sur <strong>Informations complémentaires</strong>, puis sur <strong>Exécuter quand même</strong>.</p>
+        </li>
+        <li>
+          <p>L'installation est automatique (pas besoin de droits administrateur) et le jeu s'ouvre tout seul. Un raccourci <strong>SpeedKart</strong> est ajouté au bureau et au menu Démarrer.</p>
+        </li>
+        <li>
+          <p>Si Windows demande d'autoriser le programme sur le réseau, accepte au moins pour les <strong>réseaux privés</strong>. Refuser ne bloque pas les parties en ligne.</p>
+        </li>
+        <li>
+          <p>Astuce : <kbd>F11</kbd> passe le lanceur en plein écran.</p>
+        </li>
+      </ol>
+      <div class="tip">
+        <strong>Pas de PC Windows ?</strong>
+        <span>L'hôte peut aussi jouer depuis la <a href="./">page du jeu</a> dans Chrome ou Edge sur ordinateur (Mac et Linux compris). Il vaut mieux garder l'onglet du jeu affiché pendant toute la partie.</span>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="tuto-section" id="creer">
+      <h2 class="title"><span class="step-num">3</span>Créer la partie et inviter</h2>
+      <ol class="steps">
+        <li>
+          <p>Dans le lanceur, tape ton pseudo puis clique sur <strong>Créer une partie</strong>. (Pour t'entraîner seul contre les bots, sans internet : <strong>Jouer en solo</strong>.)</p>
+          <div class="mock card" aria-hidden="true">
+            <span class="label">Ton pseudo</span>
+            <span class="input">Pilote Fou</span>
+            <span class="row"><span class="btn btn-primary">Créer une partie</span><span class="btn btn-ghost">Jouer en solo</span></span>
+          </div>
+        </li>
+        <li>
+          <p>Un <strong>code à 4 lettres</strong> apparaît en haut du salon. Clique sur <strong>Partager</strong> pour envoyer le lien à tes amis (Discord, WhatsApp, SMS...), ou dicte-leur simplement le code.</p>
+          <div class="mock mock-lobby" aria-hidden="true">
+            <span class="eyebrow">Code</span>
+            <span class="big-code">KTLG</span>
+            <span class="invite"><span class="input">https://imdarling-bit.github.io/SpeedKart/?code=KTLG</span><span class="btn btn-ghost btn-small">Partager</span></span>
+          </div>
+        </li>
+        <li>
+          <p>Quand tes amis apparaissent dans la liste <strong>Pilotes</strong>, choisis le mode, les réglages, puis lance la partie avec le gros bouton jaune.</p>
+        </li>
+      </ol>
+      <div class="tip tip-warn">
+        <strong>Important</strong>
+        <span>L'hôte garde le jeu ouvert jusqu'à la fin. S'il le ferme, la partie s'arrête pour tout le monde.</span>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="tuto-section" id="rejoindre">
+      <h2 class="title"><span class="step-num">4</span>Rejoindre (les amis)</h2>
+      <ol class="steps">
+        <li><p>Ouvre le lien reçu. Le code est déjà rempli.</p></li>
+        <li>
+          <p>Tape ton pseudo et clique sur <strong>Rejoindre</strong>. Sans lien, ouvre la <a href="./">page du jeu</a> et tape le code donné par l'hôte.</p>
+          <div class="mock card" aria-hidden="true">
+            <span class="label">Ton pseudo</span>
+            <span class="input">Bob</span>
+            <span class="row"><span class="input input-code">KTLG</span><span class="btn btn-ghost">Rejoindre</span></span>
+          </div>
+        </li>
+        <li><p>Choisis ton véhicule, ta couleur et ton klaxon pendant que l'hôte prépare la partie.</p></li>
+      </ol>
+    </section>
+
+    <!-- 5 -->
+    <section class="tuto-section" id="salon">
+      <h2 class="title"><span class="step-num">5</span>Choisir le mode et son véhicule</h2>
+      <div class="phase card">
+        <p class="eyebrow">Tout le monde</p>
+        <p><strong>29 véhicules</strong> rangés par catégorie (karts, course, sport, ville, utilitaires, poids lourds). Les barres indiquent la vitesse, l'accélération, la maniabilité et le poids : un poids lourd pousse les autres, un kart léger tourne et accélère mieux.</p>
+        <p>Dans <strong>Personnalisation</strong> : une couleur pour ton véhicule et un klaxon (bouton <strong>Tester</strong> pour l'écouter). Au foot, tu peux aussi choisir ton équipe.</p>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">L'hôte</p>
+        <p>Il choisit le <strong>mode</strong> (Course, Auto-tamponneuses, Foot turbo, Bataille de ballons), puis les réglages : circuit, nombre de tours, cylindrée, durée, taille des équipes, bots, objets, <strong>pouvoirs aléatoires</strong> et <strong>physique tamponneuse</strong> en course.</p>
+        <p>Après chaque partie, les points s'additionnent dans le <strong>championnat</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="tuto-section" id="commandes">
+      <h2 class="title"><span class="step-num">6</span>Les commandes</h2>
+      <p class="muted">Les touches suivent la position physique : ZQSD sur clavier français, WASD sur clavier anglais, et les flèches marchent partout. La liste est aussi dans le jeu, bouton <strong>?</strong> en bas à droite.</p>
+      <div class="card">
+        <table class="keys">
+          <tr><th colspan="2" class="keys-sec">Course</th></tr>
+          <tr><th>Accélérer / freiner</th><td><kbd>Z</kbd> <kbd>S</kbd> ou <kbd>↑</kbd> <kbd>↓</kbd> · manette <kbd>A</kbd> / <kbd>B</kbd></td></tr>
+          <tr><th>Tourner</th><td><kbd>Q</kbd> <kbd>D</kbd> ou <kbd>←</kbd> <kbd>→</kbd> · stick gauche</td></tr>
+          <tr><th>Déraper</th><td><kbd>Espace</kbd> · manette <kbd>RB</kbd></td></tr>
+          <tr><th>Objet</th><td><kbd>E</kbd> · manette <kbd>LB</kbd> (vers l'arrière : en maintenant <kbd>C</kbd>)</td></tr>
+          <tr><th colspan="2" class="keys-sec">Arènes</th></tr>
+          <tr><th>Avancer / reculer</th><td><kbd>Z</kbd> <kbd>S</kbd> · manette <kbd>RT</kbd> / <kbd>LT</kbd></td></tr>
+          <tr><th>Sauter (2× : figure)</th><td><kbd>Espace</kbd> · manette <kbd>A</kbd></td></tr>
+          <tr><th>Turbo</th><td><kbd>Maj</kbd> · manette <kbd>B</kbd></td></tr>
+          <tr><th>Glisser / vrille en l'air</th><td><kbd>X</kbd> · manette <kbd>X</kbd></td></tr>
+          <tr><th>Caméra ballon</th><td><kbd>C</kbd> · manette <kbd>Y</kbd></td></tr>
+          <tr><th colspan="2" class="keys-sec">Partout</th></tr>
+          <tr><th>Pouvoir spécial</th><td><kbd>R</kbd> · manette croix ↑</td></tr>
+          <tr><th>Klaxon</th><td><kbd>H</kbd></td></tr>
+          <tr><th>Emotes</th><td><kbd>1</kbd> à <kbd>6</kbd> : 😂 😡 👍 GG 😱 🔥</td></tr>
+        </table>
+      </div>
+      <p class="muted">Sur téléphone ou tablette, des boutons tactiles apparaissent et l'accélération est automatique.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="tuto-section" id="modes">
+      <h2 class="title"><span class="step-num">7</span>Les modes de jeu</h2>
+      <div class="phase card">
+        <p class="eyebrow">🏁 Course</p>
+        <p>14 circuits, dont 9 avec des <strong>loopings</strong> : prends le tapis orange juste avant pour avoir assez d'élan, sinon tu retombes. Ramasse les boîtes <strong>?</strong> pour des objets (turbo, bananes, carapaces, bombe, étoile, bouclier, éclair). Dérape longtemps pour un mini-turbo bleu, orange puis violet.</p>
+        <ul class="points">
+          <li><strong>Pouvoirs aléatoires</strong> : chacun reçoit un pouvoir (géant, échange de place, téléportation, gel, encre, comète...), utilisable avec <kbd>R</kbd> quand il est rechargé. Un nouveau est tiré à chaque fois, sans répétition rapprochée.</li>
+          <li><strong>Physique tamponneuse</strong> : chocs violents qui font faire des tonneaux, et une gravité qui ondule.</li>
+        </ul>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">💥 Auto-tamponneuses</p>
+        <p>Une plateforme flottante, sans barrières. <strong>+1 point</strong> pour chaque adversaire retourné, <strong>+2</strong> pour chaque éjection dans le vide. Toutes les 14 s, la gravité change : lunaire, écrasante, penchée, folle... Les plots roses te renvoient très fort, et attention à la barre qui tourne au centre.</p>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">⚽ Foot turbo</p>
+        <p>Façon Rocket League : Bleus contre Orange avec un ballon géant. Saute, refais un saut en tenant une direction pour une <strong>figure</strong> qui frappe fort, utilise le turbo (recharge sur les pastilles orange) et roule sur les murs et le plafond. En cas d'égalité, prolongation avec but en or.</p>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">🎈 Bataille de ballons</p>
+        <p>Chacun a des ballons (3 par défaut). Touche les autres avec tes objets pour crever les leurs ; à zéro, tu es éliminé. Le dernier debout gagne (ou celui qui a le plus de ballons à la fin du temps).</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="tuto-section" id="problemes">
+      <h2 class="title"><span class="step-num">8</span>En cas de souci</h2>
+      <div class="faq">
+        <details class="card">
+          <summary>« Partie introuvable »</summary>
+          <p>Vérifie le code (4 lettres, ni I ni O). L'hôte doit avoir le jeu ouvert avec la partie créée. Si l'hôte a fermé puis rouvert le jeu, c'est une nouvelle partie avec un nouveau code.</p>
+        </details>
+        <details class="card">
+          <summary>« Connexion perdue »</summary>
+          <p>Le jeu se reconnecte tout seul pendant 30 secondes. Si ça ne revient pas, rejoins à nouveau avec le même code.</p>
+        </details>
+        <details class="card">
+          <summary>Impossible de se connecter en 4G ou au travail</summary>
+          <p>Certains réseaux mobiles ou d'entreprise bloquent les connexions directes entre appareils. Passe sur un Wi-Fi de maison et réessaie.</p>
+        </details>
+        <details class="card">
+          <summary>Le jeu saccade</summary>
+          <p>Ferme les autres onglets et applications lourdes, branche le PC portable sur secteur, et vérifie que le navigateur utilise la carte graphique (Chrome : <em>chrome://gpu</em>). Sur un vieux PC, préfère les modes en arène, plus légers que les circuits.</p>
+        </details>
+        <details class="card">
+          <summary>Le son du moteur est trop fort</summary>
+          <p>En bas à droite : le premier curseur règle le volume général, le second (🏎️) uniquement celui du moteur. Les réglages sont gardés pour les prochaines parties.</p>
+        </details>
+        <details class="card">
+          <summary>Ma manette ne répond pas</summary>
+          <p>Branche-la avant d'ouvrir le jeu, puis appuie sur un bouton une fois la page ouverte : le navigateur ne la détecte qu'après un premier appui.</p>
+        </details>
+        <details class="card">
+          <summary>Mettre à jour le lanceur</summary>
+          <p>Rien à faire : le lanceur télécharge les nouvelles versions tout seul et les installe quand tu le fermes, jamais en pleine partie.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="tuto-section" id="code">
+      <h2 class="title"><span class="step-num">9</span>Installer depuis le code (avancé)</h2>
+      <p class="muted">Pour modifier le jeu ou l'héberger soi-même. Inutile pour jouer.</p>
+      <ol class="steps">
+        <li><p>Installe <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (version 18 ou plus récente) et <a href="https://git-scm.com" target="_blank" rel="noopener">Git</a>.</p></li>
+        <li>
+          <p>Récupère le code et ses dépendances :</p>
+          <pre class="code">git clone https://github.com/ImDarling-bit/SpeedKart.git
+cd SpeedKart
+npm install</pre>
+        </li>
+        <li>
+          <p>Lance le jeu :</p>
+          <pre class="code">npm start          # la page sur http://localhost:3000
+npm run desktop    # ou le lanceur Electron</pre>
+          <p>Les amis du même Wi-Fi peuvent ouvrir l'adresse affichée dans le terminal (<em>http://192.168.x.x:3000</em>).</p>
+        </li>
+        <li>
+          <p>Après une modification, vérifie que tout tient :</p>
+          <pre class="code">npm run simulate   # circuits, loopings, bots et modes en arène, sans navigateur</pre>
+        </li>
+      </ol>
+    </section>
+
+    <footer class="tuto-foot">
+      <a class="btn btn-primary" href="./">Aller jouer</a>
+    </footer>
+  </main>
+</body>
+</html>

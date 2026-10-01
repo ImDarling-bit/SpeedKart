@@ -18,8 +18,9 @@ function sweep(T, sList, profileFn, vLen = 16) {
     T.pointAt(s, 0, p);
     const prof = profileFn(p, s);
     m = prof.length;
+    // h se mesure le long du « haut » de la piste (vertical, sauf dans les loopings).
     for (const [d, h, u] of prof) {
-      pos.push(p.x + p.rx * d, p.y + h, p.z + p.rz * d);
+      pos.push(p.x + p.rx * d + p.ux * h, p.y + p.uy * h, p.z + p.rz * d + p.uz * h);
       uv.push(u, s / vLen);
     }
     if (i > 0) {
@@ -228,13 +229,13 @@ export async function buildWorld(T, def, theme, onProgress) {
     const edgeOf = (p) => (W(p.hw) + (T.edge === 'wall' ? 0.6 : 0)) * side;
     group.add(new THREE.Mesh(sweep(T, S, (p, s) => {
       const e = edgeOf(p);
-      const bridge = !hasGround || inRanges(T, s, def.bridges) || p.y < 0.3;
+      const bridge = !hasGround || p.loop || inRanges(T, s, def.bridges) || p.y < 0.3;
       return bridge ? [[e, UP * 0.5, 0], [e, -1.4, 1]] : [[e, UP * 0.5, 0], [e, -0.05, 1]];
     }, 8), skirtMat));
     if (hasGround) {
       const bank = new THREE.Mesh(sweep(T, S, (p, s) => {
         const e = edgeOf(p);
-        if (inRanges(T, s, def.bridges) || p.y < 0.3) return [[e, -0.1, 0], [e, -0.1, 0]];
+        if (p.loop || inRanges(T, s, def.bridges) || p.y < 0.3) return [[e, -0.1, 0], [e, -0.1, 0]];
         return [[e, -0.02, 0], [e + side * (p.y * 1.2 + 0.5), -p.y - 0.05, (p.y * 1.2) / 8]];
       }, 8), bankMat);
       bank.receiveShadow = true;
@@ -435,6 +436,7 @@ export async function buildWorld(T, def, theme, onProgress) {
     let side = 1;
     for (let s = L.every / 2; s < T.length; s += L.every) {
       const p = T.pointAt(s, 0);
+      if (p.loop) continue;
       const off = (p.hw + T.margin + 1.3) * side;
       const x = p.x + p.rx * off;
       const z = p.z + p.rz * off;

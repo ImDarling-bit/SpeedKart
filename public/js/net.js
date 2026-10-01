@@ -14,7 +14,10 @@ const PING_EVERY = 3000;
 const DEAD_AFTER = 12000;
 const ACK_TIMEOUT = 12000;
 const RECONNECT_FOR = 30000;
-const EVENTS = new Set(['join', 'vehicle', 'settings', 'start', 'lobby', 'resetScores', 'loaded', 'box', 'use', 'hit', 'bump', 'finish', 'leave']);
+const EVENTS = new Set([
+  'join', 'vehicle', 'profile', 'settings', 'start', 'lobby', 'resetScores', 'loaded', 'leave', 'horn', 'emote',
+  'box', 'use', 'hit', 'bump', 'finish', 'power', 'touch', 'pad', 'down',
+]);
 
 class Emitter {
   constructor() { this.handlers = {}; }

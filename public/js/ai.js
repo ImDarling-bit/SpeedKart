@@ -24,6 +24,17 @@ export class BotBrain {
     const q = k.q;
     if (q.s === undefined) return inp;
 
+    // Dans un looping : on garde sa voie, plein gaz.
+    if (k.loop) {
+      const rel = wrapAngle(k.yaw - k.loop.yaw);
+      const relTarget = clamp((k.d - this.lane * 4) * 0.05, -0.3, 0.3);
+      inp.steer = clamp(-(relTarget - rel) * 3, -1, 1);
+      inp.throttle = true;
+      inp.brake = false;
+      inp.drift = false;
+      return inp;
+    }
+
     // Change de voie de temps en temps ; vise les boîtes et les tapis.
     this.laneTimer -= dt;
     if (this.laneTimer <= 0) {
@@ -104,6 +115,15 @@ export class BotBrain {
       }
     } else {
       this.itemDelay = 1 + this.rand() * 2;
+    }
+
+    // Pouvoir prêt : utilisé après un petit délai aléatoire.
+    if (ctx.powerReady) {
+      this.powerDelay = (this.powerDelay ?? 1 + this.rand() * 6) - dt;
+      if (this.powerDelay <= 0) {
+        ctx.usePower();
+        this.powerDelay = null;
+      }
     }
     return inp;
   }

@@ -212,6 +212,86 @@ export function softDot(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255
   return tex(c, { repeat: false });
 }
 
+// Bulle d'emote (mise en cache : il n'y en a que quelques-unes).
+const emoteCache = new Map();
+export function emoteTexture(text) {
+  if (emoteCache.has(text)) return emoteCache.get(text);
+  const [c, g] = canvas(128, 128);
+  g.fillStyle = 'rgba(255,255,255,0.95)';
+  g.beginPath();
+  g.arc(64, 58, 50, 0, Math.PI * 2);
+  g.fill();
+  g.beginPath();
+  g.moveTo(50, 100); g.lineTo(64, 124); g.lineTo(78, 100);
+  g.fill();
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillStyle = '#1a0f3a';
+  g.font = text.length > 2 ? 'bold 44px Arial, sans-serif' : '58px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+  g.fillText(text, 64, 62);
+  const t = tex(c, { repeat: false });
+  emoteCache.set(text, t);
+  return t;
+}
+
+// Terrain de foot : bandes de pelouse, lignes, rond central, moitiés teintées.
+export function fieldTexture(X, Z) {
+  const W = 512;
+  const H = Math.round((W * Z) / X);
+  const [c, g] = canvas(W, H);
+  for (let i = 0; i < 14; i++) {
+    g.fillStyle = i % 2 ? '#3f9a3a' : '#48a843';
+    g.fillRect(0, (i * H) / 14, W, H / 14 + 1);
+  }
+  g.fillStyle = 'rgba(47,123,255,0.12)';
+  g.fillRect(0, 0, W, H / 2);
+  g.fillStyle = 'rgba(255,138,31,0.12)';
+  g.fillRect(0, H / 2, W, H / 2);
+  g.strokeStyle = 'rgba(255,255,255,0.85)';
+  g.lineWidth = 4;
+  g.strokeRect(8, 8, W - 16, H - 16);
+  g.beginPath(); g.moveTo(8, H / 2); g.lineTo(W - 8, H / 2); g.stroke();
+  g.beginPath(); g.arc(W / 2, H / 2, W * 0.14, 0, Math.PI * 2); g.stroke();
+  for (const y of [8, H - 8]) g.strokeRect(W * 0.3, y === 8 ? 8 : H - 8 - H * 0.12, W * 0.4, H * 0.12);
+  noise(g, W, H, 10, 21);
+  const t = tex(c, { repeat: false });
+  return t;
+}
+
+export function ballTexture() {
+  const [c, g] = canvas(512, 256);
+  g.fillStyle = '#f4f4f4';
+  g.fillRect(0, 0, 512, 256);
+  g.fillStyle = '#1b1b24';
+  const spots = [[64, 64], [192, 64], [320, 64], [448, 64], [0, 192], [128, 192], [256, 192], [384, 192], [512, 192], [128, 0], [384, 0], [0, 0], [256, 0], [128, 256], [384, 256]];
+  for (const [x, y] of spots) {
+    g.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+      g.lineTo(x + Math.cos(a) * 30, y + Math.sin(a) * 30);
+    }
+    g.closePath();
+    g.fill();
+  }
+  return tex(c, { repeat: false });
+}
+
+// Rayures diagonales (sol de la tamponneuse, bords).
+export function stripeTexture(a, b, n = 8) {
+  const [c, g] = canvas(256, 256);
+  g.fillStyle = a;
+  g.fillRect(0, 0, 256, 256);
+  g.fillStyle = b;
+  const w = 256 / n;
+  for (let i = -n; i < n * 2; i += 2) {
+    g.beginPath();
+    g.moveTo(i * w, 0); g.lineTo(i * w + w, 0); g.lineTo(i * w + w + 256, 256); g.lineTo(i * w + 256, 256);
+    g.closePath(); g.fill();
+  }
+  noise(g, 256, 256, 12, 5);
+  return tex(c);
+}
+
 export function nameTexture(text, color = '#ffffff') {
   const [c, g] = canvas(256, 64);
   g.font = 'bold 34px Outfit, Arial, sans-serif';

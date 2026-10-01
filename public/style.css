@@ -312,3 +312,132 @@ kbd { display: inline-block; min-width: 1.6em; padding: 0.05rem 0.4rem; border-r
   padding: 0.7rem 1.1rem; border-radius: 12px; font-weight: 700; transition: transform 0.25s ease; z-index: 30; max-width: 90vw; text-align: center;
 }
 .toast.show { transform: translate(-50%, 0); }
+.home-help { margin-top: 1rem; }
+.home-help a, .rules-more a { color: var(--yellow); font-weight: 700; }
+
+/* ------------------------------------------------ modes de jeu */
+.mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-bottom: 1rem; }
+@media (max-width: 900px) { .mode-grid { grid-template-columns: repeat(2, 1fr); } }
+.mode {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: 'i n' 'i d'; gap: 0.1rem 0.7rem; align-items: center; text-align: left;
+  padding: 0.8rem 1rem; border-radius: 14px; border: 2px solid var(--card-b); background: var(--card); transition: transform 0.12s, border-color 0.12s;
+}
+.mode:not(:disabled):hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.35); }
+.mode.on { border-color: var(--yellow); background: rgba(255, 210, 63, 0.12); box-shadow: 0 0 24px rgba(255, 210, 63, 0.15); }
+.mode:disabled:not(.on) { opacity: 0.5; }
+.mode-icon { grid-area: i; font-size: 2.2rem; }
+.mode-name { grid-area: n; font-family: var(--title); font-size: 1.05rem; }
+.mode-desc { grid-area: d; font-size: 0.78rem; color: var(--muted); line-height: 1.25; }
+
+/* Réglages visibles selon le mode choisi. */
+.only-race, .only-rocket, .only-battle, .only-arena, .only-powers { display: none; }
+body[data-mode='race'] .only-race, body[data-mode='rocket'] .only-rocket, body[data-mode='battle'] .only-battle,
+body[data-mode='bumper'] .only-arena, body[data-mode='rocket'] .only-arena, body[data-mode='battle'] .only-arena,
+body[data-mode='race'] .only-powers, body[data-mode='battle'] .only-powers { display: block; }
+.settings .set.only-race, .settings .set.only-rocket, .settings .set.only-battle, .settings .set.only-arena, .settings .set.only-powers { display: none; }
+body[data-mode='race'] .settings .set.only-race, body[data-mode='rocket'] .settings .set.only-rocket, body[data-mode='battle'] .settings .set.only-battle,
+body[data-mode='bumper'] .settings .set.only-arena, body[data-mode='rocket'] .settings .set.only-arena, body[data-mode='battle'] .settings .set.only-arena,
+body[data-mode='race'] .settings .set.only-powers, body[data-mode='battle'] .settings .set.only-powers { display: block; }
+
+/* Personnalisation. */
+.color-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+.swatch-btn {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem; color: var(--muted); transition: transform 0.1s;
+}
+.swatch-btn:hover { transform: scale(1.1); }
+.swatch-btn.on { border-color: #fff; box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.7); }
+.horn-row { margin: 0 0 0.8rem; }
+.horn-row select { flex: 2; }
+.horn-row button { flex: 1; }
+.seg .t-blue.on { background: #2f7bff; color: #fff; }
+.seg .t-orange.on { background: #ff8a1f; color: #2a1600; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.3rem; vertical-align: middle; }
+.team-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.35rem; }
+
+/* ------------------------------------------------ HUD selon le mode */
+.race-only, .arena-only, .rocket-only, .boost-only, .bumper-only, .items-only { display: none; }
+body[data-hud='race'] .race-only, body[data-hud='race'] .items-only, body[data-hud='battle'] .items-only,
+body[data-hud='rocket'] .arena-only, body[data-hud='bumper'] .arena-only, body[data-hud='battle'] .arena-only,
+body[data-hud='rocket'] .rocket-only, body[data-hud='rocket'] .boost-only, body[data-hud='bumper'] .boost-only,
+body[data-hud='bumper'] .bumper-only { display: block; }
+body[data-hud='rocket'] .hud-score { display: flex; }
+body[data-hud='race'] .hud-drift { display: flex; }
+
+.hud-clock { font-size: 2.6rem; font-variant-numeric: tabular-nums; color: #fff; }
+.hud-score {
+  position: absolute; left: 50%; top: 0.6rem; transform: translateX(-50%); align-items: center; gap: 0.6rem;
+  font-size: 2.6rem; background: rgba(10, 5, 30, 0.45); padding: 0.1rem 1.2rem; border-radius: 16px;
+}
+.sc-blue { color: #5aa2ff; } .sc-orange { color: #ffa24d; } .sc-sep { opacity: 0.6; }
+body[data-hud='rocket'] .hud-quit { top: 4.6rem; }
+.hud-ranks li em { margin-left: auto; padding-left: 0.5rem; font-style: normal; color: var(--yellow); }
+
+.hud-boost {
+  --b: 33; width: 92px; height: 92px; border-radius: 50%; place-items: center;
+  background: radial-gradient(circle, rgba(10, 5, 30, 0.85) 56%, transparent 57%), conic-gradient(#ff8a1f calc(var(--b) * 1%), rgba(255, 255, 255, 0.15) 0);
+}
+body[data-hud='rocket'] .hud-boost, body[data-hud='bumper'] .hud-boost { display: grid; }
+.hud-boost b { font-size: 1.8rem; font-weight: 400; }
+.hud-grav { display: none; align-items: center; gap: 0.4rem; font-size: 1.1rem; }
+body[data-hud='bumper'] .hud-grav { display: flex; }
+.hud-grav i { --a: 0deg; font-style: normal; font-size: 1.8rem; display: inline-block; transform: rotate(var(--a)); transition: transform 0.3s; }
+
+.power-slot {
+  margin-top: 0.5rem; position: relative; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(60, 20, 110, 0.6); border: 3px solid rgba(190, 140, 255, 0.6); font-size: 2.1rem; text-shadow: none;
+}
+.power-slot.ready { border-color: #c79bff; box-shadow: 0 0 18px #a46bff; animation: pulse 0.6s ease infinite alternate; }
+.power-slot b { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 5, 30, 0.6); border-radius: 50%; font-size: 1.6rem; font-weight: 400; font-family: var(--title); }
+.power-slot b:empty { display: none; }
+.power-slot small { position: absolute; top: 100%; margin-top: 0.3rem; font-family: 'Outfit'; font-weight: 700; font-size: 0.75rem; white-space: nowrap; text-shadow: 0 2px 4px #000; }
+.power-slot kbd { font-size: 0.7rem; }
+
+.hud-ink { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s; }
+.hud-ink.on { opacity: 0.94; transition: opacity 0.15s; }
+.hud-ink i { position: absolute; border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%; background: radial-gradient(circle at 40% 40%, #2a1f3a, #0b0612 70%); filter: blur(1px); }
+
+/* ------------------------------------------------ page tuto */
+body.tuto main { max-width: 820px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+.tuto-head { text-align: center; margin-bottom: 1.4rem; }
+.tuto-head > .btn { float: left; }
+.tuto-head h1 { clear: both; font-family: var(--title); font-weight: 400; font-style: italic; font-size: clamp(2.6rem, 9vw, 4.2rem); margin: 1rem 0 0; }
+.tuto-toc ol { margin: 0.4rem 0 0; padding-left: 1.3rem; columns: 2; column-gap: 2rem; line-height: 1.8; }
+@media (max-width: 560px) { .tuto-toc ol { columns: 1; } }
+.tuto-toc a, .tuto-section a:not(.btn) { color: var(--yellow); font-weight: 700; }
+.tuto-section { margin: 2.4rem 0; scroll-margin-top: 1rem; }
+.tuto-section .title { display: flex; align-items: center; gap: 0.7rem; font-family: var(--title); font-weight: 400; font-size: 1.6rem; margin: 0 0 0.8rem; }
+.step-num { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--yellow); color: #2a1600; font-size: 1.2rem; flex: none; }
+.role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+@media (max-width: 600px) { .role-grid { grid-template-columns: 1fr; } }
+.role p { margin: 0.3rem 0 0; line-height: 1.45; }
+.steps { padding-left: 1.3rem; line-height: 1.5; }
+.steps li { margin-bottom: 1rem; }
+.steps li p { margin: 0.2rem 0 0.5rem; }
+.mock { display: flex; flex-direction: column; gap: 0.5rem; max-width: 460px; margin: 0.4rem 0 0.6rem; pointer-events: none; }
+.mock .btn { text-align: center; }
+.mock .input { display: block; }
+.mock-smartscreen { background: #0a5aa8; color: #fff; padding: 1rem 1.2rem; border-radius: 8px; font-family: 'Segoe UI', sans-serif; }
+.mock-link { text-decoration: underline; font-size: 0.9rem; }
+.mock-winbtn { align-self: flex-end; border: 1px solid #fff; padding: 0.35rem 1rem; font-size: 0.9rem; }
+.mock-lobby { align-items: center; background: var(--card); border: 1px solid var(--card-b); border-radius: var(--radius); padding: 0.9rem; }
+.big-code { font-family: var(--title); font-size: 2.4rem; letter-spacing: 0.25em; color: var(--yellow); }
+.mock-lobby .invite { display: flex; gap: 0.4rem; width: 100%; }
+.mock-lobby .input { font-size: 0.75rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; }
+.tip { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.8rem 1rem; border-radius: 12px; background: rgba(62, 224, 255, 0.1); border-left: 4px solid var(--cyan); line-height: 1.45; }
+.tip-warn { background: rgba(255, 77, 94, 0.1); border-left-color: var(--red); }
+.phase { line-height: 1.5; }
+.phase p { margin: 0.3rem 0; }
+.points { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.points li { margin-bottom: 0.4rem; }
+.faq { display: grid; gap: 0.5rem; }
+.faq details { margin: 0; padding: 0.7rem 1rem; }
+.faq summary { cursor: pointer; font-weight: 800; }
+.faq details p { margin: 0.5rem 0 0; line-height: 1.5; color: var(--muted); }
+pre.code { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-b); border-radius: 10px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.88rem; line-height: 1.5; }
+.keys-sec { color: var(--yellow) !important; font-family: var(--title); font-weight: 400; padding-top: 0.8rem !important; }
+.tuto-foot { text-align: center; margin-top: 2rem; }
+
+.touch .s-race, .touch .s-car { display: none; }
+.touch[data-scheme='race'] .s-race, .touch[data-scheme='car'] .s-car { display: block; }
+.touch .t-power, .touch .t-boost { width: 64px; height: 64px; }

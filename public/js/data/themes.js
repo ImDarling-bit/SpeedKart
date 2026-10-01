@@ -176,6 +176,23 @@ export const THEMES = {
     ],
   },
 
+  fair: {
+    sky: ['#ff8a5c', '#ffe2b8'], fog: ['#ffd7b0', 200, 760],
+    sun: 1.4, hemi: ['#fff1dd', '#8a6a9a', 1.15],
+    ground: '#7cc35a', off: '#6bb04c',
+    road: { base: '#4b4560', line: '#ffe066' }, curb: ['#ff4fa3', '#ffffff'],
+    wall: { color: '#ffffff', stripe: '#ff4fa3' },
+    density: 0.6, spread: 55,
+    props: [
+      P('marble/banner-double-high', 12, 1.5, { near: true, face: true }), P('marble/banner-hanging-double-high', 12, 1, { face: true }),
+      P('marble/fan-standing-four', 12, 1), P('marble/tree-large', 14, 2), P('marble/tree-tall-large', 16, 2),
+      P('racing/tentLong', 6, 1.5, { face: true }), P('racing/tent', 6, 1.5, { face: true }), P('racing/grandStandCovered', 12, 1, { face: true, near: true }),
+      P('platformer/flag', 8, 1, { near: true }), P('platformer/coin-gold', 5, 1, { floatUp: 6 }), P('platformer/star', 6, 0.5, { floatUp: 8 }),
+      P('marble/marble-center-butterfly-high', 14, 0.6),
+    ],
+    lamps: { m: 'racing/lightPostLarge', h: 12, every: 70 },
+  },
+
   rainbow: {
     sky: ['#02010a', '#1a0a3a'], fog: ['#0a0520', 250, 1000],
     sun: 0.6, hemi: ['#b0a0ff', '#201040', 0.9], night: true,

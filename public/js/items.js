@@ -40,7 +40,7 @@ export function rollItem(rank, total, rand) {
   return 'mushroom';
 }
 
-export const HIT_RADIUS = { banana: 1.3, green: 1.2, red: 1.2, bomb: 1.4 };
+export const HIT_RADIUS = { banana: 1.3, green: 1.2, red: 1.2, bomb: 1.4, crate: 1.9 };
 export const BOMB_RADIUS = 9;
 
 const SHELL_SPEED = 52;
@@ -64,8 +64,15 @@ export class Entities {
     const fx = Math.sin(dir);
     const fz = Math.cos(dir);
     const e = { id, type, owner, age: 0, x: from.x, y: from.y, z: from.z, vx: 0, vz: 0, vy: 0, idx: -1, bounces: 0, target: opts.target || null };
-    if (type === 'banana') {
+    if (type === 'crate') {
+      e.x += (opts.dx || 0);
+      e.z += (opts.dz || 0);
+    } else if (type === 'comet') {
+      e.y += 40; // tombe du ciel
+    } else if (type === 'banana') {
       const dist = opts.back === false ? 6 : -3.2; // posée derrière, ou jetée devant
+      e.x += opts.dx || 0;
+      e.z += opts.dz || 0;
       e.x += Math.sin(from.yaw) * dist;
       e.z += Math.cos(from.yaw) * dist;
       if (opts.back === false) { e.vy = 7; e.vx = fx * (from.speed + 14); e.vz = fz * (from.speed + 14); }
@@ -87,7 +94,7 @@ export class Entities {
     const q = T.query(e.x, e.y, e.z, -1, this.q);
     e.idx = q.i;
     e.s = q.s;
-    if (e.type !== 'bomb' && !e.vy) e.y = q.y + 0.4;
+    if (e.type !== 'bomb' && e.type !== 'comet' && !e.vy) e.y = q.y + 0.4;
     this.list.set(id, e);
 
     if (type === 'banana') {
@@ -112,8 +119,24 @@ export class Entities {
     const q = this.q;
     for (const e of [...this.list.values()]) {
       e.age += dt;
-      if (e.type === 'banana') {
+      if (e.type === 'banana' || e.type === 'crate') {
         if (e.vy || !e.grounded) this.ballistic(e, dt, 0.4, true);
+        if (e.type === 'crate' && e.age > 25) this.remove(e.id);
+        continue;
+      }
+      if (e.type === 'comet') {
+        // Fonce sur sa cible, en piqué.
+        const t = karts.find((k) => k.id === e.target);
+        if (!t || e.age > 8) { this.remove(e.id); continue; }
+        const dx = t.x - e.x;
+        const dy = t.y + 0.5 - e.y;
+        const dz = t.z - e.z;
+        const dist = Math.hypot(dx, dy, dz);
+        const sp = 75 * dt;
+        if (dist < 3 || dist < sp) { e.x = t.x; e.y = t.y; e.z = t.z; this.explode(e); continue; }
+        e.x += (dx / dist) * sp;
+        e.y += (dy / dist) * sp;
+        e.z += (dz / dist) * sp;
         continue;
       }
       if (e.type === 'bomb') {
@@ -226,7 +249,7 @@ export class Entities {
   // Rend un objet touché par le kart k (hôte : bots). Renvoie l'objet ou null.
   touching(k, ownerId) {
     for (const e of this.list.values()) {
-      if (e.type === 'bomb') continue;
+      if (e.type === 'bomb' || e.type === 'comet') continue;
       if (e.owner === ownerId && e.age < 0.6) continue;
       const r = (HIT_RADIUS[e.type] || 1.2) + KART_RADIUS * 0.8;
       if (Math.abs(e.x - k.x) < r && Math.abs(e.z - k.z) < r && Math.abs(e.y - k.y - 0.4) < 2.2
