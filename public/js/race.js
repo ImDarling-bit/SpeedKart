@@ -20,6 +20,7 @@ import { Input } from './input.js';
 import { Hud, EMOTES } from './hud.js';
 import { sfx, horn, engineStart, engineUpdate, engineStop, engineProfileFor } from './audio.js';
 import { formatTime, makeRng, lerpAngle, clamp } from './util.js';
+import { getSettings, particleBudget } from './settings.js';
 
 const STEP = 1 / 60;
 const INTERP = 110; // ms de retard d'affichage des autres karts
@@ -79,7 +80,7 @@ export class Race {
     scene.background = world.background;
 
     this.camera = new THREE.PerspectiveCamera(72, 1, 0.1, 2600);
-    this.fx = new Particles(scene);
+    this.fx = new Particles(scene, particleBudget());
 
     // Karts de la grille.
     const ccMul = CC_CLASSES[info.cc] || 1;
@@ -711,8 +712,9 @@ export class Race {
     const fwd = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
     const up = new THREE.Vector3(-Math.sin(yaw) * Math.sin(pitch), Math.cos(pitch), -Math.cos(yaw) * Math.sin(pitch));
     if (look) up.set(0, 1, 0);
-    const dist = 6.6 + speedRatio * 0.8;
-    const height = 2.7 + speedRatio * 0.3;
+    const S = getSettings();
+    const dist = (6.6 + speedRatio * 0.8) * S.camDist;
+    const height = (2.7 + speedRatio * 0.3) * (0.6 + 0.4 * S.camDist);
     const target = new THREE.Vector3(f.x, f.y, f.z).addScaledVector(fwd, -dist).addScaledVector(up, height);
     if (!k || !k.falling) {
       const inLoop = pitch !== 0;
@@ -727,13 +729,13 @@ export class Race {
     const wantUp = upside ? up.clone().negate() : up;
     this.camUp.lerp(wantUp, 1 - Math.exp(-6 * dt)).normalize();
     cam.up.copy(this.camUp);
-    const shake = (this.shake || 0);
-    this.shake = Math.max(0, shake - dt);
+    const shake = S.shake ? (this.shake || 0) : 0;
+    this.shake = Math.max(0, (this.shake || 0) - dt);
     const lookAt = new THREE.Vector3(f.x, f.y, f.z).addScaledVector(fwd, 4).addScaledVector(up, 1.2);
     lookAt.x += (Math.random() - 0.5) * shake;
     lookAt.y += (Math.random() - 0.5) * shake;
     cam.lookAt(lookAt);
-    const fov = 70 + speedRatio * 6 + (boost ? 9 : 0);
+    const fov = 70 + S.fov + speedRatio * 6 + (boost ? 9 : 0);
     if (Math.abs(cam.fov - fov) > 0.05) {
       cam.fov += (fov - cam.fov) * Math.min(1, dt * 4);
       cam.updateProjectionMatrix();

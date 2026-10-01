@@ -1,6 +1,6 @@
 # SpeedKart
 
-Jeu de voitures 3D entre potes, dans l'esprit de Mario Kart et Rocket League : 14 circuits (dont 9 avec loopings), 29 véhicules, objets, pouvoirs aléatoires, dérapages et mini-turbos, et trois modes en arène : auto-tamponneuses, foot turbo et bataille de ballons. Des bots complètent les parties.
+Jeu de voitures 3D entre potes, dans l'esprit de Mario Kart et Rocket League : 14 circuits (dont 9 avec loopings), 29 véhicules, objets, pouvoirs aléatoires, dérapages et mini-turbos, trois modes en arène (auto-tamponneuses, foot turbo, bataille de ballons) et un mode police contre voleurs dans trois villes, avec quatre règles. Des bots complètent les parties.
 
 **Pas à pas pour installer et jouer : [le tuto](https://imdarling-bit.github.io/SpeedKart/tuto.html)** (aussi dans `public/tuto.html`).
 
@@ -20,7 +20,9 @@ L'hôte peut aussi jouer depuis la page, mais le lanceur est plus confortable (p
 
 ## Commandes
 
-| Action | Course | Arènes | Manette |
+Toutes les touches se changent dans **Paramètres → Commandes**. Le tableau donne les touches par défaut.
+
+| Action | Course | Arènes et police | Manette |
 |---|---|---|---|
 | Avancer, freiner | ↑ ↓ / Z S / W S | ↑ ↓ / Z S | course : A, B · arènes : RT, LT |
 | Tourner | ← → / Q D / A D | idem | stick gauche, croix |
@@ -29,12 +31,16 @@ L'hôte peut aussi jouer depuis la page, mais le lanceur est plus confortable (p
 | Turbo | – | Maj | B |
 | Glisser, vrille en l'air | – | X / Alt | X |
 | Caméra ballon (foot) | – | C | Y |
-| Objet | E / F / Ctrl | E / F | LB |
-| Pouvoir spécial | R | R | croix ↑ |
+| Objet / gadget 1 | E / Ctrl | E / Entrée | LB |
+| Pouvoir spécial / gadget 2 | R | R | croix ↑ |
+| Gadget 3 (police) | – | F | Y |
 | Klaxon | H | H | clic stick gauche |
 | Emotes | 1 à 6 | 1 à 6 | croix ↓ |
+| Pause | Échap | Échap | Start |
 
-Sur téléphone, des boutons tactiles apparaissent (l'accélération est automatique).
+Sur téléphone et tablette, des commandes tactiles apparaissent : joystick ou boutons, au choix dans les paramètres (en course, l'accélération est automatique).
+
+**Paramètres** (écran titre ou menu pause) : qualité graphique, taille du HUD, champ de vision, distance de la caméra, secousses, volume général et volume du moteur, disposition tactile, touches.
 
 ## Modes
 
@@ -42,6 +48,14 @@ Sur téléphone, des boutons tactiles apparaissent (l'accélération est automat
 - **Auto-tamponneuses** : plateforme flottante ; +1 point par adversaire retourné, +2 par éjection. La gravité change toutes les 14 s (lunaire, écrasante, penchée, folle).
 - **Foot turbo** : façon Rocket League. Bleus contre Orange (1c1 à 4c4), ballon géant, saut, double saut et figures, turbo et pastilles, conduite sur les murs et le plafond, prolongation en but en or.
 - **Bataille de ballons** : 1 à 5 ballons chacun, objets dans l'arène, dernier debout gagne. Pouvoirs en option.
+- **Police contre voleurs** : dans une ville (Centre-ville, Zone industrielle, Port), environ un tiers des joueurs sont policiers, en voiture de police imposée. Les rôles tournent à chaque manche (2 à 4 manches). Les voleurs ont 5 s d'avance, et la police ne voit sur sa carte que les voleurs proches. Quatre règles au choix :
+  - **Braquage** : les voleurs ramassent des sacs d'argent et les déposent dans les planques. Un voleur arrêté va en prison, et un complice peut le libérer en roulant sur le bouton.
+  - **Chasse** : il faut survivre jusqu'à la fin du temps. Un voleur arrêté est éliminé.
+  - **Contamination** : un ou deux policiers au départ, et chaque voleur arrêté devient policier.
+  - **Évasion** : les sorties de la ville ouvrent au bout de 20 s, et il faut en franchir une. Un voleur arrêté repart du départ.
+  - Gadgets de la police : sirène (révèle les voleurs), herse, barrage de cônes. Gadgets des voleurs : nitro, fumigène (aveugle), flaque d'huile.
+
+Les arènes de foot et d'auto-tamponneuses s'agrandissent avec le nombre de joueurs, jusqu'à environ 2 fois leur taille.
 
 ## Contenu
 
@@ -62,11 +76,13 @@ npm run simulate           # tous les circuits
 npm run simulate -- monid  # un seul
 ```
 
-La simulation vérifie que le tracé ne se chevauche pas, que les loopings sont bien placés (élan avant, rien dedans) et que 8 bots bouclent 3 tours sans rester bloqués. Elle joue aussi une course avec pouvoirs et chaos, et les trois modes en arène jusqu'au bout (`npm run simulate -- race` ou `-- arena` pour ne lancer qu'une partie).
+La simulation vérifie que le tracé ne se chevauche pas, que les loopings sont bien placés (élan avant, rien dedans) et que 8 bots bouclent 3 tours sans rester bloqués. Elle joue aussi jusqu'au bout une course avec pouvoirs et chaos, les trois modes en arène et la police contre voleurs avec ses quatre règles. Pour ne lancer qu'une partie : `npm run simulate -- race`, `-- arena` ou `-- cops`.
 
 ## Comment ça marche
 
-- `public/js/room.js` : le cœur de l'hôte (salon, profils, réglages, chargement, résultats, points). Chaque mode a son module : `modes/racegame.js` (course, objets, pouvoirs) et `modes/arenagame.js` (tamponneuse, foot, bataille). Rien ne dépend du navigateur : tout tourne aussi sous Node.
+- `public/js/room.js` : le cœur de l'hôte (salon, profils, réglages, chargement, résultats, points). Chaque mode a son module : `modes/racegame.js` (course, objets, pouvoirs), `modes/arenagame.js` (tamponneuse, foot, bataille) et `modes/copsgame.js` (police contre voleurs : manches, rôles, arrestations, gadgets). Rien ne dépend du navigateur : tout tourne aussi sous Node.
+- `public/js/city.js` : les villes, générées à partir d'une grille de pâtés de maisons (immeubles, parcs, entrepôts, prison, eau). On en tire la géométrie de collision, le graphe des carrefours (A* pour les bots de `copsbot.js`), les planques et les sorties. Le rendu est dans `cityview.js` et la partie côté joueur dans `copsplay.js`.
+- `public/js/app.js` : l'interface. Elle comprend l'écran titre animé (`title.js`), le salon en 4 étapes (mode, véhicule, carte, salle), le menu pause, les paramètres (`settings.js`) et le podium 3D (`podium.js`).
 - `public/js/net.js` : le transport PeerJS. L'id de l'hôte est `speedkart-<CODE>`. Chaque pilote envoie sa position 20 fois par seconde. L'hôte renvoie à tous un instantané (véhicules, ballon, objets, boîtes) 20 fois par seconde, plus les événements (coups, buts, pouvoirs, klaxons, emotes).
 - `public/js/kart.js` : la physique arcade des karts (course), loopings et effets des pouvoirs compris.
 - `public/js/car3d.js` : la physique 3D des arènes (corps rigide, roues qui collent aux murs, saut, figures, ballon). Les arènes sont décrites par des fonctions de distance (`arena.js`).

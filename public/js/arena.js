@@ -46,25 +46,38 @@ function sdOBox(x, y, z, c, h, yaw = 0, pitch = 0) {
 
 // ------------------------------------------------------------ définitions
 
-export const ARENAS = {
-  // Terrain de foot motorisé : boîte aux arêtes arrondies (on roule sur les murs), deux buts.
-  rocket: {
-    kind: 'rocket', name: 'Stade Turbo',
-    X: 52, Z: 72, H: 30, R: 11,
-    goal: { w: 11, h: 8.5, d: 9 },
-    ballR: 2.4,
-    gravity: [0, -16, 0],
-  },
-  // Plateforme flottante circulaire, plots rebondissants et barre tournante.
-  bumper: {
-    kind: 'bumper', name: 'Plateau Tamponneur',
-    radius: 38,
-    bumpers: [[18, 0], [-18, 0], [0, 18], [0, -18], [22, 22], [-22, -22]].map(([x, z]) => ({ x, z, r: 2.6 })),
-    sweeper: { len: 30, w: 1.6, h: 1.5, speed: 0.55 },
-  },
+// Taille des arènes de foot et de tamponneuse selon le nombre de véhicules :
+// 1× pour 2 véhicules, jusqu'à 2× pour 8.
+export function arenaScale(kind, count) {
+  if (kind !== 'rocket' && kind !== 'bumper') return 1;
+  return Math.max(1, Math.min(2, 1 + (count - 2) / 6));
+}
+
+// Définition d'une arène à l'échelle s.
+export function arenaDef(kind, s = 1) {
+  if (kind === 'rocket') {
+    // Terrain de foot motorisé : boîte aux arêtes arrondies (on roule sur les murs), deux buts.
+    const k = (f) => 1 + (s - 1) * f; // grandit moins vite que le terrain
+    return {
+      kind, name: 'Stade Turbo', scale: s,
+      X: 52 * s, Z: 72 * s, H: 30 * k(0.5), R: 11 * k(0.3),
+      goal: { w: 11 * k(0.45), h: 8.5 * k(0.25), d: 9 },
+      ballR: 2.4 * k(0.15),
+      gravity: [0, -16, 0],
+    };
+  }
+  if (kind === 'bumper') {
+    // Plateforme flottante circulaire, plots rebondissants et barre tournante.
+    return {
+      kind, name: 'Plateau Tamponneur', scale: s,
+      radius: 38 * s,
+      bumpers: [[18, 0], [-18, 0], [0, 18], [0, -18], [22, 22], [-22, -22]].map(([x, z]) => ({ x: x * s, z: z * s, r: 2.6 })),
+      sweeper: { len: 30 * s, w: 1.6, h: 1.5, speed: 0.55 / Math.sqrt(s) },
+    };
+  }
   // Arène de bataille : enceinte murée, plateau central avec rampes, piliers et murets.
-  battle: {
-    kind: 'battle', name: 'Arène des Ballons',
+  return {
+    kind: 'battle', name: 'Arène des Ballons', scale: 1,
     half: 56, wallH: 6,
     plateau: { c: [0, 1.6, 0], h: [11, 1.6, 11] },
     ramps: [0, Math.PI / 2, Math.PI, -Math.PI / 2].map((yaw) => ({ yaw })),
@@ -75,8 +88,8 @@ export const ARENAS = {
       { c: [-36, 1.2, 0], h: [0.8, 1.2, 10], yaw: 0 },
       { c: [36, 1.2, 0], h: [0.8, 1.2, 10], yaw: 0 },
     ],
-  },
-};
+  };
+}
 
 // Phases de gravité de l'arène tamponneuse (toutes les 14 s) : même calcul chez tout le monde.
 export const BUMPER_PHASES = [
@@ -101,8 +114,9 @@ export function bumperGravity(t) {
 
 // ------------------------------------------------------------ mondes physiques
 
-export function makeWorld(kind) {
-  const A = ARENAS[kind];
+// Monde physique d'une arène. Pour une ville (police contre voleurs), voir city.js.
+export function makeWorld(kind, scale = 1) {
+  const A = arenaDef(kind, scale);
   let dist;
   let bounce = () => 0;
   let gravity = () => [0, -18, 0];
@@ -158,9 +172,14 @@ export function makeWorld(kind) {
     gravity = () => [0, -24, 0];
   }
 
+  return finishWorld(kind, A, dist, bounce, gravity);
+}
+
+// Ajoute à une fonction de distance les outils communs (normale, rayon, sol).
+export function finishWorld(kind, def, dist, bounce = () => 0, gravity = () => [0, -18, 0]) {
   const world = {
     kind,
-    def: A,
+    def,
     dist,
     bounce,
     gravity,
@@ -184,7 +203,7 @@ export function makeWorld(kind) {
     },
     // Point de réapparition sûr le plus proche de (x, z) sur le sol.
     groundY(x, z, t = 0) {
-      const top = kind === 'battle' ? 12 : 4;
+      const top = kind === 'bumper' || kind === 'rocket' ? 4 : 12;
       const h = world.ray([x, top, z], [0, -1, 0], 40, t);
       return h === Infinity ? null : top - h;
     },
@@ -193,8 +212,7 @@ export function makeWorld(kind) {
 }
 
 // Le ballon est-il entré dans un but ? +1 : but côté +Z, -1 : côté -Z, 0 sinon.
-export function goalScored(ball) {
-  const A = ARENAS.rocket;
+export function goalScored(ball, A) {
   if (Math.abs(ball.p[0]) > A.goal.w || ball.p[1] > A.goal.h) return 0;
   if (ball.p[2] > A.Z + A.ballR * 0.8) return 1;
   if (ball.p[2] < -A.Z - A.ballR * 0.8) return -1;

@@ -34,6 +34,13 @@ export const CAR_MODES = {
     airPitch: 3, airYaw: 3, airRoll: 3, maxAng: 9, stick: 0, rest: 0.45, boostUse: 60, boostRegen: 18,
     carCarE: 1.5, lift: 0.6, mass: 1,
   },
+  // Poursuites en ville : rapide, adhérent, turbo qui se recharge.
+  cops: {
+    maxSpeed: 31, boostSpeed: 44, accel: 22, brake: 34, boostAccel: 28, turnLow: 3.0, turnHigh: 1.9,
+    grip: 11, slideGrip: 2, jump: 5.5, jumpHold: 10, jumpHoldTime: 0.15, dbl: 0, dodge: 0, dodgeSpin: 0,
+    airPitch: 4, airYaw: 4, airRoll: 4, maxAng: 6, stick: 2, rest: 0.25, boostUse: 45, boostRegen: 9,
+    carCarE: 0.5, lift: 0.1, mass: 1,
+  },
   battle: {
     maxSpeed: 25, boostSpeed: 38, accel: 21, brake: 30, boostAccel: 30, turnLow: 3.1, turnHigh: 2.1,
     grip: 12, slideGrip: 2.5, jump: 5, jumpHold: 8, jumpHoldTime: 0.12, dbl: 0, dodge: 0, dodgeSpin: 0,
@@ -200,7 +207,7 @@ export class Car3D {
       const side = norm(cross(n, f)); // vers la gauche
       const vf = dot(this.v, f);
       const vs = dot(this.v, side);
-      let max = P.maxSpeed * (this.fx.slow > 0 ? 0.65 : 1) * (this.fx.star > 0 ? 1.15 : 1) * (this.fx.small > 0 ? 0.75 : 1);
+      let max = P.maxSpeed * (this.fx.slow > 0 ? 0.65 : 1) * (this.fx.star > 0 ? 1.15 : 1) * (this.fx.small > 0 ? 0.75 : 1) * (this.speedMul ?? 1);
       if (throttle > 0) {
         if (vf < 0) addScaled(this.v, f, P.brake * dt);
         else if (vf < max) addScaled(this.v, f, P.accel * throttle * (1 - 0.65 * (vf / max)) * dt);

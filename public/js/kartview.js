@@ -186,7 +186,7 @@ export class KartView {
       this.body.rotation.set(
         -(st.pitch || 0) + (vis.spin && vis.air && !vis.flip ? this.tumble : 0),
         0,
-        vis.drift * 0.12 + (vis.trick ? this.trickSpin : 0) + this.roll,
+        (vis.drift || 0) * 0.12 + (vis.trick ? this.trickSpin : 0) + this.roll,
       );
     }
     const size = vis.giant ? 2 : vis.small ? 0.6 : 1;

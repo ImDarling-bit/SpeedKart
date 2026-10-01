@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#140a2e">
+  <meta name="theme-color" content="#0a0c11">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
   <meta name="description" content="Installer SpeedKart et lancer une partie entre amis, étape par étape : lanceur Windows, code d'invitation, modes de jeu, commandes.">
   <title>Tuto SpeedKart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="tuto">
   <main>
     <header class="tuto-head">
-      <a class="btn btn-ghost btn-small" href="./">Retour au jeu</a>
-      <h1><span class="b1">Speed</span><span class="b2">Kart</span></h1>
+      <a class="btn btn-ghost btn-sm" href="./">Retour au jeu</a>
+      <div class="logo"><span>SPEED</span><span>KART</span></div>
       <p class="tagline">Le tuto : installer, créer une partie, inviter ses amis, jouer.</p>
     </header>
 
@@ -27,7 +27,7 @@
         <li><a href="#installer">Installer le lanceur (l'hôte)</a></li>
         <li><a href="#creer">Créer la partie et inviter</a></li>
         <li><a href="#rejoindre">Rejoindre (les amis)</a></li>
-        <li><a href="#salon">Choisir le mode et son véhicule</a></li>
+        <li><a href="#salon">Le salon en 4 étapes</a></li>
         <li><a href="#commandes">Les commandes</a></li>
         <li><a href="#modes">Les modes de jeu</a></li>
         <li><a href="#problemes">En cas de souci</a></li>
@@ -55,7 +55,7 @@
     <section class="tuto-section" id="installer">
       <h2 class="title"><span class="step-num">2</span>Installer le lanceur</h2>
       <p class="muted">Uniquement pour l'hôte, et une seule fois : le lanceur se met ensuite à jour tout seul.</p>
-      <ol class="steps">
+      <ol class="steps-list">
         <li>
           <p>Télécharge l'installeur <strong>SpeedKart-Setup</strong> (fichier .exe, environ 110 Mo) :</p>
           <a class="btn btn-primary" href="https://github.com/ImDarling-bit/SpeedKart/releases/latest" target="_blank" rel="noopener">Télécharger le lanceur</a>
@@ -88,7 +88,7 @@
     <!-- 3 -->
     <section class="tuto-section" id="creer">
       <h2 class="title"><span class="step-num">3</span>Créer la partie et inviter</h2>
-      <ol class="steps">
+      <ol class="steps-list">
         <li>
           <p>Dans le lanceur, tape ton pseudo puis clique sur <strong>Créer une partie</strong>. (Pour t'entraîner seul contre les bots, sans internet : <strong>Jouer en solo</strong>.)</p>
           <div class="mock card" aria-hidden="true">
@@ -102,7 +102,7 @@
           <div class="mock mock-lobby" aria-hidden="true">
             <span class="eyebrow">Code</span>
             <span class="big-code">KTLG</span>
-            <span class="invite"><span class="input">https://imdarling-bit.github.io/SpeedKart/?code=KTLG</span><span class="btn btn-ghost btn-small">Partager</span></span>
+            <span class="row"><span class="input">https://imdarling-bit.github.io/SpeedKart/?code=KTLG</span><span class="btn btn-ghost btn-sm">Partager</span></span>
           </div>
         </li>
         <li>
@@ -118,7 +118,7 @@
     <!-- 4 -->
     <section class="tuto-section" id="rejoindre">
       <h2 class="title"><span class="step-num">4</span>Rejoindre (les amis)</h2>
-      <ol class="steps">
+      <ol class="steps-list">
         <li><p>Ouvre le lien reçu. Le code est déjà rempli.</p></li>
         <li>
           <p>Tape ton pseudo et clique sur <strong>Rejoindre</strong>. Sans lien, ouvre la <a href="./">page du jeu</a> et tape le code donné par l'hôte.</p>
@@ -134,23 +134,34 @@
 
     <!-- 5 -->
     <section class="tuto-section" id="salon">
-      <h2 class="title"><span class="step-num">5</span>Choisir le mode et son véhicule</h2>
+      <h2 class="title"><span class="step-num">5</span>Le salon en 4 étapes</h2>
+      <p class="muted">Les étapes sont en haut de l'écran ; on passe de l'une à l'autre avec <strong>Suivant</strong> et <strong>Retour</strong>, ou en cliquant dessus.</p>
       <div class="phase card">
-        <p class="eyebrow">Tout le monde</p>
-        <p><strong>29 véhicules</strong> rangés par catégorie (karts, course, sport, ville, utilitaires, poids lourds). Les barres indiquent la vitesse, l'accélération, la maniabilité et le poids : un poids lourd pousse les autres, un kart léger tourne et accélère mieux.</p>
-        <p>Dans <strong>Personnalisation</strong> : une couleur pour ton véhicule et un klaxon (bouton <strong>Tester</strong> pour l'écouter). Au foot, tu peux aussi choisir ton équipe.</p>
+        <p class="eyebrow">1 · Mode (l'hôte)</p>
+        <p>Course, Police / Voleurs (avec sa règle : braquage, chasse, contamination, évasion), Foot turbo, Tamponneuses ou Bataille de ballons.</p>
       </div>
       <div class="phase card">
-        <p class="eyebrow">L'hôte</p>
-        <p>Il choisit le <strong>mode</strong> (Course, Auto-tamponneuses, Foot turbo, Bataille de ballons), puis les réglages : circuit, nombre de tours, cylindrée, durée, taille des équipes, bots, objets, <strong>pouvoirs aléatoires</strong> et <strong>physique tamponneuse</strong> en course.</p>
-        <p>Après chaque partie, les points s'additionnent dans le <strong>championnat</strong>.</p>
+        <p class="eyebrow">2 · Véhicule (tout le monde)</p>
+        <p><strong>29 véhicules</strong> par catégorie, avec un grand aperçu 3D. Les barres indiquent la vitesse, l'accélération, la maniabilité et le poids : un poids lourd pousse les autres, un kart léger tourne et accélère mieux. Choisis aussi ta couleur, ton klaxon et, au foot, ton équipe.</p>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">3 · Carte et réglages (l'hôte)</p>
+        <p>Le circuit ou la ville, puis les réglages : tours, cylindrée, durée, taille des équipes, ballons, bots, objets, <strong>pouvoirs aléatoires</strong>, <strong>physique tamponneuse</strong>.</p>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">4 · Salle d'attente</p>
+        <p>Les pilotes présents, le résumé de la partie et le championnat (les points s'additionnent d'une partie à l'autre). L'hôte appuie sur <strong>Lancer</strong>.</p>
+      </div>
+      <div class="tip">
+        <strong>Paramètres</strong>
+        <span>Le bouton ⚙ (ou <strong>Paramètres</strong> sur l'écran titre) règle la qualité graphique, la taille de l'interface, le son, la caméra et permet de <strong>changer les touches</strong>. En partie, <kbd>Échap</kbd> ouvre le menu pause.</span>
       </div>
     </section>
 
     <!-- 6 -->
     <section class="tuto-section" id="commandes">
       <h2 class="title"><span class="step-num">6</span>Les commandes</h2>
-      <p class="muted">Les touches suivent la position physique : ZQSD sur clavier français, WASD sur clavier anglais, et les flèches marchent partout. La liste est aussi dans le jeu, bouton <strong>?</strong> en bas à droite.</p>
+      <p class="muted">Les touches suivent la position physique : ZQSD sur clavier français, WASD sur clavier anglais, et les flèches marchent partout. La liste est aussi dans le jeu (menu pause → Commandes), et chaque touche se change dans <strong>Paramètres → Commandes</strong>.</p>
       <div class="card">
         <table class="keys">
           <tr><th colspan="2" class="keys-sec">Course</th></tr>
@@ -166,6 +177,8 @@
           <tr><th>Caméra ballon</th><td><kbd>C</kbd> · manette <kbd>Y</kbd></td></tr>
           <tr><th colspan="2" class="keys-sec">Partout</th></tr>
           <tr><th>Pouvoir spécial</th><td><kbd>R</kbd> · manette croix ↑</td></tr>
+          <tr><th>Gadgets (police / voleurs)</th><td><kbd>E</kbd> <kbd>R</kbd> <kbd>F</kbd> · manette <kbd>LB</kbd>, croix ↑, <kbd>Y</kbd></td></tr>
+          <tr><th>Menu pause</th><td><kbd>Échap</kbd> · manette <kbd>Start</kbd></td></tr>
           <tr><th>Klaxon</th><td><kbd>H</kbd></td></tr>
           <tr><th>Emotes</th><td><kbd>1</kbd> à <kbd>6</kbd> : 😂 😡 👍 GG 😱 🔥</td></tr>
         </table>
@@ -183,6 +196,17 @@
           <li><strong>Pouvoirs aléatoires</strong> : chacun reçoit un pouvoir (géant, échange de place, téléportation, gel, encre, comète...), utilisable avec <kbd>R</kbd> quand il est rechargé. Un nouveau est tiré à chaque fois, sans répétition rapprochée.</li>
           <li><strong>Physique tamponneuse</strong> : chocs violents qui font faire des tonneaux, et une gravité qui ondule.</li>
         </ul>
+      </div>
+      <div class="phase card">
+        <p class="eyebrow">🚓 Police contre voleurs</p>
+        <p>Dans une ville (Centre-Ville, Zone Industrielle ou Le Port). Environ un tiers des joueurs sont policiers, en voiture de police imposée ; les voleurs gardent leur véhicule. Les rôles tournent à chaque manche, et les voleurs ont 5 s d'avance au départ. La police arrête un voleur en le percutant, et ne le voit sur sa carte que de près, ou quand elle allume la sirène.</p>
+        <ul class="points">
+          <li><strong>Braquage</strong> : les voleurs ramassent les sacs 💰 (3 au maximum, ça ralentit) et les rapportent à la <strong>planque</strong>. Arrêtés, ils vont en prison ; un complice libre roule sur le bouton rouge pour les libérer.</li>
+          <li><strong>Chasse à l'homme</strong> : la police doit arrêter tout le monde avant la fin du temps.</li>
+          <li><strong>Contamination</strong> : un voleur arrêté devient policier. Le dernier voleur libre gagne.</li>
+          <li><strong>Évasion</strong> : les sorties s'ouvrent au bout de 20 s ; les voleurs doivent les atteindre.</li>
+        </ul>
+        <p>Gadgets (touches <kbd>E</kbd> <kbd>R</kbd> <kbd>F</kbd>) : la police a la sirène, la herse et un barrage de cônes ; les voleurs ont la nitro, le fumigène et l'huile.</p>
       </div>
       <div class="phase card">
         <p class="eyebrow">💥 Auto-tamponneuses</p>
@@ -220,7 +244,7 @@
         </details>
         <details class="card">
           <summary>Le son du moteur est trop fort</summary>
-          <p>En bas à droite : le premier curseur règle le volume général, le second (🏎️) uniquement celui du moteur. Les réglages sont gardés pour les prochaines parties.</p>
+          <p>Dans <strong>Paramètres → Son</strong> : un curseur pour le volume général, un autre uniquement pour le moteur. Les réglages sont gardés pour les prochaines parties.</p>
         </details>
         <details class="card">
           <summary>Ma manette ne répond pas</summary>
@@ -237,7 +261,7 @@
     <section class="tuto-section" id="code">
       <h2 class="title"><span class="step-num">9</span>Installer depuis le code (avancé)</h2>
       <p class="muted">Pour modifier le jeu ou l'héberger soi-même. Inutile pour jouer.</p>
-      <ol class="steps">
+      <ol class="steps-list">
         <li><p>Installe <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (version 18 ou plus récente) et <a href="https://git-scm.com" target="_blank" rel="noopener">Git</a>.</p></li>
         <li>
           <p>Récupère le code et ses dépendances :</p>

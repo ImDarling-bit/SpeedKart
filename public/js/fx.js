@@ -106,6 +106,42 @@ export function entityMesh(type) {
     const band = new THREE.Mesh(new THREE.BoxGeometry(2.46, 0.4, 2.46), mat('crateBand', { color: '#6b4420' }));
     band.position.y = 1.2;
     g.add(box, band);
+  } else if (type === 'spike') {
+    // Herse : bande sombre hérissée de pointes, en travers de la route.
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.15, 0.9), mat('spike', { color: '#2a2a30', metalness: 0.6, roughness: 0.4 }));
+    strip.position.y = 0.08;
+    g.add(strip);
+    const tip = new THREE.ConeGeometry(0.16, 0.5, 6);
+    for (let i = -3; i <= 3; i += 0.5) {
+      const s = new THREE.Mesh(tip, mat('spikeTip', { color: '#c8c8d0', metalness: 0.8, roughness: 0.2 }));
+      s.position.set(i, 0.35, 0);
+      g.add(s);
+    }
+  } else if (type === 'cone') {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.4, 16), mat('cone', { color: '#ff7a1f', roughness: 0.5 }));
+    cone.position.y = 0.7;
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.4, 0.22, 16), mat('coneBand', { color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 0.3 }));
+    band.position.y = 0.75;
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 1.2), mat('coneBase', { color: '#ff7a1f' }));
+    base.position.y = 0.05;
+    g.add(cone, band, base);
+  } else if (type === 'oil') {
+    const puddle = new THREE.Mesh(new THREE.CircleGeometry(3.4, 28), mat('oil', { color: '#0b0b12', roughness: 0.05, metalness: 0.9, transparent: true, opacity: 0.92 }));
+    puddle.rotation.x = -Math.PI / 2;
+    puddle.position.y = 0.06;
+    puddle.scale.y = 0.75;
+    g.add(puddle);
+  } else if (type === 'smoke') {
+    const tex = softDot('rgba(200,200,210,1)', 'rgba(200,200,210,0)');
+    for (let i = 0; i < 14; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: '#b8b8c4', transparent: true, opacity: 0.75, depthWrite: false }));
+      const a = (i / 14) * Math.PI * 2;
+      const r = 2 + (i % 3) * 2;
+      s.position.set(Math.cos(a) * r, 2 + (i % 4), Math.sin(a) * r);
+      s.scale.setScalar(7 + (i % 3) * 2);
+      g.add(s);
+    }
+    g.userData.smoke = true;
   } else if (type === 'comet') {
     const core = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12), mat('comet', { color: '#ffd27a', emissive: '#ff7a1f', emissiveIntensity: 2 }));
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: softDot(), color: '#ff9a3a', blending: THREE.AdditiveBlending, depthWrite: false }));

@@ -7,11 +7,13 @@ import { TRACKS } from './data/tracks.js';
 import { VEHICLES, CC_CLASSES } from './data/vehicles.js';
 import { createRaceGame } from './modes/racegame.js';
 import { createArenaGame, ARENA_MODES } from './modes/arenagame.js';
+import { createCopsGame, COPS_RULES } from './modes/copsgame.js';
+import { CITIES } from './city.js';
 import { KART_COLORS } from './data/colors.js';
 import { EMOTES, HORN_KINDS } from './data/social.js';
 
 export const MAX_KARTS = 8;
-export const MODES = ['race', ...ARENA_MODES];
+export const MODES = ['race', ...ARENA_MODES, 'cops'];
 const POINTS = [15, 12, 10, 8, 6, 4, 2, 1];
 const BOT_NAMES = ['Turbo Tom', 'Mémé Drift', 'Pilote Pixel', 'Capitaine Pneu', 'Lulu Nitro', 'Bob Bolide', 'Zaza Zoom', 'Gigi Gomme'];
 const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -37,7 +39,7 @@ export function createRoom(opts) {
   let hostId = null;
   const settings = {
     mode: 'race', track: TRACKS[0].id, laps: 3, cc: 100, bots: true, items: true, difficulty: 2,
-    powers: false, chaos: false, teamSize: 2, matchTime: 3, balloons: 3,
+    powers: false, chaos: false, teamSize: 2, matchTime: 3, balloons: 3, copsRule: 'heist', city: 'centre',
   };
   let phase = 'lobby'; // lobby | game | results
   let game = null;
@@ -116,7 +118,9 @@ export function createRoom(opts) {
 
   function startGame() {
     const id = ++gameSeq;
-    game = settings.mode === 'race' ? createRaceGame(ctx, id) : createArenaGame(ctx, id, settings.mode);
+    if (settings.mode === 'race') game = createRaceGame(ctx, id);
+    else if (settings.mode === 'cops') game = createCopsGame(ctx, id);
+    else game = createArenaGame(ctx, id, settings.mode);
     game.createdAt = now();
     game.startAt = null;
     phase = 'game';
@@ -218,6 +222,8 @@ export function createRoom(opts) {
       if (p.teamSize) settings.teamSize = Math.max(1, Math.min(4, p.teamSize | 0));
       if (p.matchTime) settings.matchTime = Math.max(1, Math.min(10, p.matchTime | 0));
       if (p.balloons) settings.balloons = Math.max(1, Math.min(5, p.balloons | 0));
+      if (COPS_RULES[p.copsRule]) settings.copsRule = p.copsRule;
+      if (p.city && (p.city === 'random' || CITIES.some((c) => c.id === p.city))) settings.city = p.city;
       broadcast();
       return { ok: true };
     },

@@ -1,45 +1,27 @@
-// Commandes : clavier (AZERTY et QWERTY, par position physique), manette, écran tactile.
-// Deux schémas : 'race' (karts) et 'car' (arènes : saut, turbo, figures).
+// Commandes : clavier (touches personnalisables, par position physique : ZQSD = WASD),
+// manette, écran tactile (joystick virtuel + boutons). Deux schémas : 'race' (karts) et
+// 'car' (arènes et police : saut, turbo, figures, gadgets).
 
-const RACE_KEYS = {
-  up: ['ArrowUp', 'KeyW', 'KeyZ'],
-  down: ['ArrowDown', 'KeyS'],
-  left: ['ArrowLeft', 'KeyA', 'KeyQ'],
-  right: ['ArrowRight', 'KeyD'],
-  drift: ['Space', 'ShiftLeft', 'ShiftRight'],
-  item: ['KeyE', 'KeyF', 'ControlLeft', 'ControlRight', 'Enter'],
-  back: ['KeyC', 'KeyX'],
-};
-const CAR_KEYS = {
-  up: ['ArrowUp', 'KeyW', 'KeyZ'],
-  down: ['ArrowDown', 'KeyS'],
-  left: ['ArrowLeft', 'KeyA', 'KeyQ'],
-  right: ['ArrowRight', 'KeyD'],
-  jump: ['Space'],
-  boost: ['ShiftLeft', 'ShiftRight'],
-  slide: ['KeyX', 'AltLeft', 'ControlLeft'],
-  item: ['KeyE', 'KeyF', 'Enter'],
-  cam: ['KeyC'],
-};
-const COMMON = {
-  power: ['KeyR', 'KeyV'],
-  horn: ['KeyH', 'KeyK'],
-};
+import { keysFor, getSettings } from './settings.js';
+
 export const EMOTE_KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
+const RACE_ACTIONS = ['up', 'down', 'left', 'right', 'drift', 'item', 'back'];
+const CAR_ACTIONS = ['up', 'down', 'left', 'right', 'jump', 'boost', 'slide', 'item', 'g3', 'cam'];
 
 export class Input {
   constructor(scheme = 'race') {
     this.scheme = scheme;
-    this.keys = scheme === 'car' ? CAR_KEYS : RACE_KEYS;
     this.down = new Set();
-    this.touch = { left: false, right: false, brake: false, drift: false, item: false, jump: false, boost: false, power: false };
+    this.touch = { left: false, right: false, brake: false, drift: false, item: false, jump: false, boost: false, power: false, g3: false };
+    this.stick = { x: 0, y: 0, active: false };
     this.touchMode = false;
+    this.paused = false;
     this.prev = {};
     this.steerSmooth = 0;
-    const all = [...Object.values(this.keys), ...Object.values(COMMON), EMOTE_KEYS].flat();
+    this.refreshKeys();
     this.onKeyDown = (e) => {
       if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
-      if (all.includes(e.code)) e.preventDefault();
+      if (this.allKeys.has(e.code)) e.preventDefault();
       this.down.add(e.code);
     };
     this.onKeyUp = (e) => this.down.delete(e.code);
@@ -49,9 +31,19 @@ export class Input {
     window.addEventListener('blur', this.onBlur);
   }
 
-  any(list) { return list.some((k) => this.down.has(k)); }
+  // Relit les touches (après un changement dans les paramètres).
+  refreshKeys() {
+    const actions = this.scheme === 'car' ? CAR_ACTIONS : RACE_ACTIONS;
+    this.keys = {};
+    for (const a of actions) this.keys[a] = keysFor(this.scheme, a);
+    this.keys.power = keysFor('common', 'power');
+    this.keys.horn = keysFor('common', 'horn');
+    this.allKeys = new Set([...Object.values(this.keys).flat(), ...EMOTE_KEYS]);
+  }
 
-  // Boutons tactiles : éléments portant data-touch="left|right|brake|drift|item|jump|boost|power".
+  any(list) { return !!list && list.some((k) => this.down.has(k)); }
+
+  // Commandes tactiles : boutons [data-touch] et joystick [data-stick].
   bindTouch(root) {
     this.touchMode = true;
     root.querySelectorAll('[data-touch]').forEach((el) => {
@@ -63,6 +55,32 @@ export class Input {
       el.addEventListener('pointercancel', off);
       el.addEventListener('pointerleave', off);
     });
+    const pad = root.querySelector('[data-stick]');
+    if (pad) {
+      const knob = pad.querySelector('i');
+      let id = null;
+      const move = (e) => {
+        const r = pad.getBoundingClientRect();
+        const R = r.width / 2;
+        let dx = (e.clientX - (r.left + R)) / R;
+        let dy = (e.clientY - (r.top + R)) / R;
+        const l = Math.hypot(dx, dy);
+        if (l > 1) { dx /= l; dy /= l; }
+        this.stick.x = dx;
+        this.stick.y = dy;
+        if (knob) knob.style.transform = `translate(${dx * R * 0.6}px, ${dy * R * 0.6}px)`;
+      };
+      pad.addEventListener('pointerdown', (e) => { e.preventDefault(); id = e.pointerId; pad.setPointerCapture(id); this.stick.active = true; move(e); });
+      pad.addEventListener('pointermove', (e) => { if (e.pointerId === id) move(e); });
+      const end = (e) => {
+        if (e.pointerId !== id) return;
+        id = null;
+        this.stick = { x: 0, y: 0, active: false };
+        if (knob) knob.style.transform = '';
+      };
+      pad.addEventListener('pointerup', end);
+      pad.addEventListener('pointercancel', end);
+    }
   }
 
   // Front montant d'une commande (appui, pas maintien).
@@ -78,6 +96,13 @@ export class Input {
     return out;
   }
 
+  // Bouton Start / Menu de la manette (pour le menu pause).
+  pausePressed() {
+    let p = false;
+    for (const gp of this.pads()) if (gp.buttons[9] && gp.buttons[9].pressed) p = true;
+    return this.edge('pause', p);
+  }
+
   read(dt) {
     const K = this.keys;
     const car = this.scheme === 'car';
@@ -91,8 +116,9 @@ export class Input {
     let boost = car && this.any(K.boost);
     let slide = car && this.any(K.slide);
     let cam = car && this.any(K.cam);
-    let power = this.any(COMMON.power);
-    let horn = this.any(COMMON.horn);
+    let g3 = car && this.any(K.g3);
+    let power = this.any(K.power);
+    let horn = this.any(K.horn);
     let emote = EMOTE_KEYS.findIndex((k) => this.down.has(k));
 
     // Manette (disposition standard).
@@ -106,7 +132,7 @@ export class Input {
       if (b(14)) padSteer = -1;
       if (b(15)) padSteer = 1;
       if (car) {
-        // A saute, B turbo, X glisse / vrille, Y caméra ballon, RT/LT avance/recule, LB objet.
+        // A saute, B turbo, X glisse / vrille, Y caméra ballon (ou gadget 3), RT/LT avance/recule, LB objet.
         const t = val(7) - val(6);
         if (Math.abs(t) > 0.1) throttleAxis = t;
         if (Math.abs(ay) > 0.2) pitch = -ay;
@@ -130,14 +156,22 @@ export class Input {
 
     if (this.touchMode) {
       const t = this.touch;
-      if (t.left || t.right) padSteer = (t.right ? 1 : 0) - (t.left ? 1 : 0);
-      if (!t.brake) throttleAxis = Math.max(throttleAxis, 1); // accélération automatique au tactile
-      else throttleAxis = -1;
+      if (this.stick.active) {
+        padSteer = Math.abs(this.stick.x) > 0.12 ? this.stick.x : 0;
+        if (this.stick.y > 0.55) throttleAxis = -1;
+        else throttleAxis = Math.max(throttleAxis, 1);
+        if (car) pitch = -this.stick.y;
+      } else {
+        if (t.left || t.right) padSteer = (t.right ? 1 : 0) - (t.left ? 1 : 0);
+        if (!t.brake) throttleAxis = Math.max(throttleAxis, 1); // accélération automatique au tactile
+      }
+      if (t.brake) throttleAxis = -1;
       drift = drift || t.drift;
       item = item || t.item;
       jump = jump || t.jump;
       boost = boost || t.boost;
       power = power || t.power;
+      g3 = g3 || t.g3;
     }
 
     // Le clavier tourne progressivement, la manette est analogique.
@@ -148,7 +182,7 @@ export class Input {
     const emotePressed = emote >= 0 && emote !== this.lastEmote ? emote : -1;
     this.lastEmote = emote;
 
-    return {
+    const out = {
       steer,
       throttle: car ? throttleAxis : throttleAxis > 0,
       brake: throttleAxis < 0,
@@ -162,8 +196,14 @@ export class Input {
       powerPressed: this.edge('power', power),
       hornPressed: this.edge('horn', horn),
       camPressed: this.edge('cam', cam),
+      g3Pressed: this.edge('g3', g3),
       emote: emotePressed,
     };
+    // Menu pause ouvert : la partie continue mais on ne pilote plus.
+    if (this.paused) {
+      return { steer: 0, throttle: car ? 0 : false, brake: false, pitch: 0, drift: false, jump: false, boost: false, slide: false, back: false, itemPressed: false, powerPressed: false, hornPressed: false, camPressed: false, g3Pressed: false, emote: -1 };
+    }
+    return out;
   }
 
   dispose() {
@@ -172,3 +212,5 @@ export class Input {
     window.removeEventListener('blur', this.onBlur);
   }
 }
+
+export const touchLayout = () => getSettings().touch;

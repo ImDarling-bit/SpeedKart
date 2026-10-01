@@ -3,7 +3,7 @@
 // local pour que nos frappes soient immédiates ; l'hôte reprend la main entre deux touches.
 
 import * as THREE from './three.js';
-import { makeWorld, ARENAS, bumperGravity } from './arena.js';
+import { makeWorld, bumperGravity } from './arena.js';
 import { Car3D, Ball, collideCars, hitBall, CF, CAR_MODES } from './car3d.js';
 import { spawnPoints, boostPads, battleBoxes } from './modes/arenagame.js';
 import { buildArena } from './arenaview.js';
@@ -12,13 +12,14 @@ import { Particles, entityMesh } from './fx.js';
 import { Input } from './input.js';
 import { Hud, EMOTES } from './hud.js';
 import { ITEMS } from './items.js';
-import { ARENA_HIT } from './arenaitems.js';
+import { ARENA_HIT, PERSISTENT } from './arenaitems.js';
 import { powerById, applyPowerToCar } from './powers.js';
 import { vehicleById } from './data/vehicles.js';
 import { colorHex, TEAM_COLORS } from './data/colors.js';
 import { sfx, horn, engineStart, engineUpdate, engineStop, engineProfileFor } from './audio.js';
 import { add, sub, len, norm, scale, qSlerp, qYaw } from './vec.js';
 import { clamp } from './util.js';
+import { getSettings, particleBudget } from './settings.js';
 
 const SUB = 1 / 120;
 const INTERP = 100;
@@ -65,8 +66,8 @@ export class ArenaPlay {
 
   async load(onProgress) {
     const mode = this.mode;
-    this.world = makeWorld(mode);
-    const arena = await buildArena(mode);
+    this.world = makeWorld(mode, this.info.scale || 1);
+    const arena = await buildArena(this.world.def);
     this.arena = arena;
     onProgress(0.6);
     const scene = new THREE.Scene();
@@ -75,7 +76,7 @@ export class ArenaPlay {
     scene.fog = arena.fog;
     scene.background = arena.background;
     this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2600);
-    this.fx = new Particles(scene);
+    this.fx = new Particles(scene, particleBudget());
 
     let done = 0;
     await Promise.all(this.info.grid.map(async (g, i) => {
@@ -102,7 +103,7 @@ export class ArenaPlay {
     }));
 
     if (mode === 'rocket') {
-      this.ball = new Ball(this.world, ARENAS.rocket.ballR);
+      this.ball = new Ball(this.world, this.world.def.ballR);
       this.ballShown = new THREE.Vector3(0, this.ball.p[1], 0);
       this.ballHits = 0;
     }
@@ -201,14 +202,14 @@ export class ArenaPlay {
 
     // Objets (bataille).
     const alive = new Set();
-    for (const [id, type, x, y, z, owner, age] of snap.e || []) {
+    for (const [id, type, x, y, z, owner, age, yaw] of snap.e || []) {
       alive.add(id);
       let e = this.entities.get(id);
       if (!e) {
-        if (this.hitSet.has(id)) continue;
-        e = { id, type, owner, mesh: entityMesh(type === 'crate' ? 'banana' : type), buf: [] };
-        if (type === 'crate') e.mesh = this.crateMesh();
+        if (this.hitSet.has(id) && !PERSISTENT[type]) continue;
+        e = { id, type, owner, mesh: entityMesh(type), buf: [] };
         e.mesh.position.set(x, y, z);
+        e.mesh.rotation.y = yaw || 0;
         this.scene.add(e.mesh);
         this.entities.set(id, e);
       }
@@ -218,15 +219,6 @@ export class ArenaPlay {
     }
     for (const [id, e] of this.entities) if (!alive.has(id)) { this.scene.remove(e.mesh); this.entities.delete(id); }
     this.renderRanks();
-  }
-
-  crateMesh() {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), new THREE.MeshStandardMaterial({ color: '#b07a3a', roughness: 0.8 }));
-    m.castShadow = true;
-    const g = new THREE.Group();
-    m.position.y = 1.2;
-    g.add(m);
-    return g;
   }
 
   maskWithLocal(mask, hidden, now) {
@@ -468,7 +460,7 @@ export class ArenaPlay {
     const mode = this.mode;
     // Pastilles de turbo (foot).
     if (mode === 'rocket') {
-      boostPads().forEach((pad, i) => {
+      boostPads(this.world.def).forEach((pad, i) => {
         if (this.padMask[i] === '0' || this.padHidden.has(i)) return;
         if (Math.hypot(pad.p[0] - car.p[0], pad.p[2] - car.p[2]) < (pad.big ? 3 : 2.2) && car.p[1] < 3) {
           this.padHidden.set(i, now);
@@ -488,7 +480,7 @@ export class ArenaPlay {
         sfx.fall();
         this.respawnAt = now + 1500;
         this.lastHitBy = null;
-        const spots = spawnPoints('bumper', 8);
+        const spots = spawnPoints(this.world.def, 8);
         const s = spots[Math.floor(Math.random() * spots.length)];
         setTimeout(() => {
           if (this.disposed) return;
@@ -692,8 +684,9 @@ export class ArenaPlay {
     if (dir.lengthSq() < 0.01) dir.copy(this.camDir);
     dir.normalize();
     this.camDir.lerp(dir, 1 - Math.exp(-(this.ballCam ? 8 : 5) * dt)).normalize();
-    const dist = this.mode === 'rocket' ? 9.5 : 8;
-    const target = p.clone().addScaledVector(this.camDir, -dist).add(new THREE.Vector3(0, 3.6, 0));
+    const S = getSettings();
+    const dist = (this.mode === 'rocket' ? 9.5 : 8) * S.camDist;
+    const target = p.clone().addScaledVector(this.camDir, -dist).add(new THREE.Vector3(0, 3.6 * (0.6 + 0.4 * S.camDist), 0));
     // Garde la caméra dans l'arène.
     for (let i = 0; i < 8 && this.world.dist(target.x, target.y, target.z, Math.max(0, this.gameTime())) < 1; i++) target.lerp(p, 0.25);
     if (!this.camInit) { cam.position.copy(target); this.camInit = true; }
@@ -701,15 +694,15 @@ export class ArenaPlay {
     const upside = performance.now() < this.upsideUntil;
     this.camUp.lerp(new THREE.Vector3(0, upside ? -1 : 1, 0), 1 - Math.exp(-6 * dt)).normalize();
     cam.up.copy(this.camUp);
-    const shake = this.shake || 0;
-    this.shake = Math.max(0, shake - dt);
+    const shake = S.shake ? this.shake || 0 : 0;
+    this.shake = Math.max(0, (this.shake || 0) - dt);
     let look = p.clone().addScaledVector(this.camDir, 4).add(new THREE.Vector3(0, 1.2, 0));
     if (this.ballCam && this.ball) look = look.lerp(new THREE.Vector3(...this.ball.p), 0.35);
     look.x += (Math.random() - 0.5) * shake;
     look.y += (Math.random() - 0.5) * shake;
     cam.lookAt(look);
     const boosting = this.car && (this.car.boosting || this.car.fx.turbo > 0);
-    const fov = 75 + (boosting ? 8 : 0);
+    const fov = 75 + S.fov + (boosting ? 8 : 0);
     if (Math.abs(cam.fov - fov) > 0.05) { cam.fov += (fov - cam.fov) * Math.min(1, dt * 4); cam.updateProjectionMatrix(); }
   }
 
@@ -768,14 +761,14 @@ export class ArenaPlay {
   }
 
   prepareMap() {
+    const A = this.world.def;
     if (this.mode === 'rocket') {
-      const A = ARENAS.rocket;
       this.hud.prepareMap([[-A.X, -A.Z], [A.X, -A.Z], [A.X, A.Z], [-A.X, A.Z]], null);
     } else if (this.mode === 'bumper') {
-      const R = ARENAS.bumper.radius;
+      const R = A.radius;
       this.hud.prepareMap(Array.from({ length: 48 }, (_, i) => [Math.cos((i / 48) * Math.PI * 2) * R, Math.sin((i / 48) * Math.PI * 2) * R]), null);
     } else {
-      const H = ARENAS.battle.half;
+      const H = A.half;
       this.hud.prepareMap([[-H, -H], [H, -H], [H, H], [-H, H]], null);
     }
   }

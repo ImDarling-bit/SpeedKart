@@ -17,6 +17,7 @@ const RECONNECT_FOR = 30000;
 const EVENTS = new Set([
   'join', 'vehicle', 'profile', 'settings', 'start', 'lobby', 'resetScores', 'loaded', 'leave', 'horn', 'emote',
   'box', 'use', 'hit', 'bump', 'finish', 'power', 'touch', 'pad', 'down',
+  'arrest', 'bag', 'deposit', 'free', 'escape', 'gadget',
 ]);
 
 class Emitter {

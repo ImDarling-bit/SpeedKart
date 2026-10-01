@@ -3,299 +3,314 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#140a2e">
+  <meta name="theme-color" content="#0a0c11">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss: blob: data:; object-src 'none'; base-uri 'none'">
   <title>SpeedKart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Russo+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-screen="screen-home">
+<body data-screen="screen-title">
   <canvas id="game"></canvas>
 
-  <!-- Accueil -->
-  <section class="screen" id="screen-home">
-    <div class="home-bg"></div>
-    <div class="brand">
-      <h1><span class="b1">Speed</span><span class="b2">Kart</span></h1>
-      <p class="tagline">Courses, loopings, tamponneuses, foot motorisé et bataille de ballons, entre potes.</p>
-    </div>
-    <div class="card home-card">
-      <label class="label" for="nameInput">Ton pseudo</label>
-      <input id="nameInput" class="input" maxlength="16" autocomplete="nickname" placeholder="Pilote Fou">
-      <div class="row">
-        <button class="btn btn-primary" id="createBtn">Créer une partie</button>
-        <button class="btn btn-ghost" id="soloBtn">Jouer en solo</button>
+  <!-- Écran titre -->
+  <section class="screen" id="screen-title">
+    <canvas id="titleCanvas"></canvas>
+    <div class="title-ui">
+      <div class="logo"><span>SPEED</span><span>KART</span></div>
+      <p class="tagline">Courses, foot turbo, tamponneuses, bataille de ballons et police contre voleurs. Entre potes, sans serveur.</p>
+
+      <label class="field">
+        <span class="label">Pseudo</span>
+        <input id="nameInput" class="input" maxlength="16" autocomplete="nickname" placeholder="Pilote Fou">
+      </label>
+
+      <div class="menu">
+        <button class="btn btn-primary btn-lg" id="createBtn"><span>Créer une partie</span><small>Invite tes amis avec un code</small></button>
+        <div class="join-row">
+          <input id="codeInput" class="input input-code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="Code de la partie">
+          <button class="btn btn-secondary" id="joinBtn">Rejoindre</button>
+        </div>
+        <button class="btn btn-secondary" id="soloBtn">Jouer en solo</button>
+        <div class="menu-sub">
+          <button class="btn btn-ghost" data-open="settingsModal">Paramètres</button>
+          <a class="btn btn-ghost" href="tuto.html" target="_blank" rel="noopener">Tuto</a>
+        </div>
       </div>
-      <div class="divider"><span>ou rejoindre des amis</span></div>
-      <div class="row">
-        <input id="codeInput" class="input input-code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE">
-        <button class="btn btn-ghost" id="joinBtn">Rejoindre</button>
-      </div>
-      <p class="muted" id="homeStatus" aria-live="polite"></p>
+      <p class="status" id="homeStatus" aria-live="polite"></p>
       <p class="error" id="homeError" role="alert"></p>
     </div>
-    <p class="home-help"><a href="tuto.html" target="_blank" rel="noopener">Première fois ? Le tuto pas à pas</a></p>
   </section>
 
-  <!-- Salon -->
+  <!-- Salon en 4 étapes -->
   <section class="screen hidden" id="screen-lobby">
-    <header class="lobby-head">
-      <div class="logo-small"><span class="b1">Speed</span><span class="b2">Kart</span></div>
-      <div class="code-box">
-        <span class="eyebrow">Code</span>
-        <strong id="lobbyCode"></strong>
+    <header class="lobby-bar">
+      <div class="logo logo-sm"><span>SPEED</span><span>KART</span></div>
+      <nav class="stepper" id="stepper" aria-label="Étapes">
+        <button data-step="mode"><b>1</b>Mode</button>
+        <button data-step="vehicle"><b>2</b>Véhicule</button>
+        <button data-step="map"><b>3</b>Carte</button>
+        <button data-step="room"><b>4</b>Salle</button>
+      </nav>
+      <div class="lobby-meta">
+        <div class="code-chip" id="codeChip"><small>CODE</small><strong id="lobbyCode"></strong></div>
+        <button class="btn btn-ghost btn-sm" id="shareBtn">Inviter</button>
+        <button class="icon-btn" data-open="settingsModal" aria-label="Paramètres">⚙</button>
+        <button class="btn btn-ghost btn-sm" data-action="leave">Quitter</button>
       </div>
-      <div class="invite" id="inviteRow">
-        <input class="input" id="inviteLink" readonly>
-        <button class="btn btn-ghost btn-small" id="shareBtn">Partager</button>
-      </div>
-      <button class="btn btn-link" data-action="leave">Quitter</button>
     </header>
 
-    <div class="mode-grid" id="modeGrid"></div>
+    <main class="steps">
+      <!-- 1. Mode -->
+      <section class="step" data-step="mode">
+        <div class="step-head"><h2>Mode de jeu</h2><p class="muted" id="modeHint"></p></div>
+        <div class="mode-grid" id="modeGrid"></div>
+        <div class="sub-grid hidden" id="copsRules"></div>
+      </section>
 
-    <div class="lobby-grid">
-      <div class="col">
-        <div class="card">
-          <div class="card-head"><h2>Ton véhicule</h2><span class="muted" id="vehCat"></span></div>
-          <div class="veh-preview">
+      <!-- 2. Véhicule -->
+      <section class="step" data-step="vehicle">
+        <div class="veh-layout">
+          <div class="veh-stage">
             <canvas id="vehPreview"></canvas>
-            <div class="veh-name" id="vehName"></div>
+            <div class="veh-caption">
+              <span class="eyebrow" id="vehCat"></span>
+              <h2 id="vehName"></h2>
+              <div class="stats" id="vehStats"></div>
+            </div>
           </div>
-          <div class="stats" id="vehStats"></div>
-          <div class="chips" id="vehCats"></div>
-          <div class="veh-grid" id="vehGrid"></div>
-        </div>
-        <div class="card">
-          <div class="card-head"><h2>Personnalisation</h2></div>
-          <span class="label">Couleur</span>
-          <div class="color-row" id="colorRow"></div>
-          <span class="label">Klaxon <small class="muted">(touche H en jeu)</small></span>
-          <div class="row horn-row">
-            <select class="input" id="hornSelect"></select>
-            <button class="btn btn-ghost btn-small" id="hornTest">📯 Tester</button>
-          </div>
-          <div class="only-rocket">
-            <span class="label">Ton équipe</span>
-            <div class="seg">
-              <button data-team="auto">Auto</button><button data-team="blue" class="t-blue">Bleus</button><button data-team="orange" class="t-orange">Orange</button>
+          <div class="veh-side">
+            <div class="chips" id="vehCats"></div>
+            <div class="veh-grid" id="vehGrid"></div>
+            <div class="panel">
+              <span class="label">Couleur</span>
+              <div class="color-row" id="colorRow"></div>
+              <span class="label">Klaxon <small>(touche H)</small></span>
+              <div class="row">
+                <select class="input" id="hornSelect"></select>
+                <button class="btn btn-secondary btn-sm" id="hornTest">Écouter</button>
+              </div>
+              <div class="only-rocket">
+                <span class="label">Équipe</span>
+                <div class="seg">
+                  <button data-team="auto">Auto</button><button data-team="blue" class="t-blue">Bleus</button><button data-team="orange" class="t-orange">Orange</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="col col-wide">
-        <div class="card only-race">
-          <div class="card-head"><h2>Circuit</h2><span class="muted" id="trackDesc"></span></div>
-          <div class="track-grid" id="trackGrid"></div>
+      <!-- 3. Carte et réglages -->
+      <section class="step" data-step="map">
+        <div class="map-layout">
+          <div class="map-main">
+            <div class="step-head"><h2 id="mapTitle">Circuit</h2><p class="muted" id="trackDesc"></p></div>
+            <div class="track-grid only-race" id="trackGrid"></div>
+            <div class="card-grid only-cops" id="cityGrid"></div>
+            <div class="arena-card only-arena" id="arenaCard"></div>
+          </div>
+          <aside class="panel settings" id="settingsPanel">
+            <h3>Réglages</h3>
+            <div class="set only-race"><span class="label">Tours</span><div class="seg">
+              <button data-set="laps" data-value="1">1</button><button data-set="laps" data-value="2">2</button><button data-set="laps" data-value="3">3</button><button data-set="laps" data-value="5">5</button></div></div>
+            <div class="set only-race"><span class="label">Cylindrée</span><div class="seg">
+              <button data-set="cc" data-value="50">50cc</button><button data-set="cc" data-value="100">100cc</button><button data-set="cc" data-value="150">150cc</button><button data-set="cc" data-value="200">200cc</button></div></div>
+            <div class="set only-rocket"><span class="label">Équipes</span><div class="seg">
+              <button data-set="teamSize" data-value="1">1v1</button><button data-set="teamSize" data-value="2">2v2</button><button data-set="teamSize" data-value="3">3v3</button><button data-set="teamSize" data-value="4">4v4</button></div></div>
+            <div class="set only-timed"><span class="label" id="durationLabel">Durée</span><div class="seg">
+              <button data-set="matchTime" data-value="2">2 min</button><button data-set="matchTime" data-value="3">3 min</button><button data-set="matchTime" data-value="5">5 min</button></div></div>
+            <div class="set only-battle"><span class="label">Ballons</span><div class="seg">
+              <button data-set="balloons" data-value="1">1</button><button data-set="balloons" data-value="3">3</button><button data-set="balloons" data-value="5">5</button></div></div>
+            <div class="set"><span class="label">Bots</span><div class="seg">
+              <button data-set="bots" data-value="false">Aucun</button><button data-set="bots" data-value="true">Compléter</button></div></div>
+            <div class="set"><span class="label">Niveau des bots</span><div class="seg">
+              <button data-set="difficulty" data-value="1">Facile</button><button data-set="difficulty" data-value="2">Normal</button><button data-set="difficulty" data-value="3">Difficile</button></div></div>
+            <div class="set only-race"><span class="label">Objets</span><div class="seg">
+              <button data-set="items" data-value="true">Oui</button><button data-set="items" data-value="false">Non</button></div></div>
+            <div class="set only-powers"><span class="label">Pouvoirs aléatoires</span><div class="seg">
+              <button data-set="powers" data-value="false">Non</button><button data-set="powers" data-value="true">Oui</button></div></div>
+            <div class="set only-race"><span class="label">Physique tamponneuse</span><div class="seg">
+              <button data-set="chaos" data-value="false">Non</button><button data-set="chaos" data-value="true">Oui</button></div></div>
+            <p class="muted host-note">Seul l'hôte modifie les réglages.</p>
+          </aside>
         </div>
-        <div class="card settings">
-          <div class="set only-race">
-            <span class="label">Tours</span>
-            <div class="seg">
-              <button data-set="laps" data-value="1">1</button><button data-set="laps" data-value="2">2</button>
-              <button data-set="laps" data-value="3">3</button><button data-set="laps" data-value="5">5</button>
-            </div>
-          </div>
-          <div class="set only-race">
-            <span class="label">Cylindrée</span>
-            <div class="seg">
-              <button data-set="cc" data-value="50">50cc</button><button data-set="cc" data-value="100">100cc</button>
-              <button data-set="cc" data-value="150">150cc</button><button data-set="cc" data-value="200">200cc</button>
-            </div>
-          </div>
-          <div class="set only-rocket">
-            <span class="label">Équipes</span>
-            <div class="seg">
-              <button data-set="teamSize" data-value="1">1 c 1</button><button data-set="teamSize" data-value="2">2 c 2</button>
-              <button data-set="teamSize" data-value="3">3 c 3</button><button data-set="teamSize" data-value="4">4 c 4</button>
-            </div>
-          </div>
-          <div class="set only-arena">
-            <span class="label">Durée</span>
-            <div class="seg">
-              <button data-set="matchTime" data-value="2">2 min</button><button data-set="matchTime" data-value="3">3 min</button><button data-set="matchTime" data-value="5">5 min</button>
-            </div>
-          </div>
-          <div class="set only-battle">
-            <span class="label">Ballons</span>
-            <div class="seg">
-              <button data-set="balloons" data-value="1">1</button><button data-set="balloons" data-value="3">3</button><button data-set="balloons" data-value="5">5</button>
-            </div>
-          </div>
-          <div class="set">
-            <span class="label">Bots</span>
-            <div class="seg">
-              <button data-set="bots" data-value="false">Aucun</button><button data-set="bots" data-value="true">Compléter</button>
-            </div>
-          </div>
-          <div class="set">
-            <span class="label">Niveau des bots</span>
-            <div class="seg">
-              <button data-set="difficulty" data-value="1">Facile</button><button data-set="difficulty" data-value="2">Normal</button><button data-set="difficulty" data-value="3">Difficile</button>
-            </div>
-          </div>
-          <div class="set only-race">
-            <span class="label">Objets</span>
-            <div class="seg">
-              <button data-set="items" data-value="true">Oui</button><button data-set="items" data-value="false">Non</button>
-            </div>
-          </div>
-          <div class="set only-powers">
-            <span class="label">Pouvoirs aléatoires 🎲</span>
-            <div class="seg">
-              <button data-set="powers" data-value="false">Non</button><button data-set="powers" data-value="true">Oui</button>
-            </div>
-          </div>
-          <div class="set only-race">
-            <span class="label">Physique tamponneuse 💥</span>
-            <div class="seg">
-              <button data-set="chaos" data-value="false">Non</button><button data-set="chaos" data-value="true">Oui</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
 
-      <div class="col">
-        <div class="card">
-          <div class="card-head"><h2>Pilotes</h2><span class="muted" id="lobbyCount"></span></div>
-          <ul class="player-list" id="lobbyPlayers"></ul>
+      <!-- 4. Salle d'attente -->
+      <section class="step" data-step="room">
+        <div class="room-layout">
+          <div>
+            <div class="step-head"><h2>Pilotes <span class="muted" id="lobbyCount"></span></h2></div>
+            <ul class="player-grid" id="lobbyPlayers"></ul>
+            <div class="invite-box" id="inviteRow">
+              <span class="label">Lien d'invitation</span>
+              <div class="row"><input class="input" id="inviteLink" readonly><button class="btn btn-secondary btn-sm" id="copyBtn">Copier</button></div>
+            </div>
+          </div>
+          <aside>
+            <div class="panel summary" id="summary"></div>
+            <div class="panel hidden" id="standingsCard">
+              <div class="panel-head"><h3>Championnat</h3><button class="btn btn-ghost btn-sm host-only" id="resetScoresBtn">Remettre à zéro</button></div>
+              <ol class="standings" id="standings"></ol>
+            </div>
+          </aside>
         </div>
-        <div class="card hidden" id="standingsCard">
-          <div class="card-head"><h2>Championnat</h2><button class="btn btn-link btn-tiny host-only" id="resetScoresBtn">Remettre à zéro</button></div>
-          <ol class="standings" id="standings"></ol>
-        </div>
-        <button class="btn btn-primary btn-big" id="startBtn">Lancer la course !</button>
-        <p class="muted center" id="lobbyHint"></p>
-      </div>
-    </div>
+      </section>
+    </main>
+
+    <footer class="step-nav">
+      <button class="btn btn-ghost" id="prevBtn">← Retour</button>
+      <p class="muted" id="lobbyHint"></p>
+      <button class="btn btn-primary" id="nextBtn">Suivant →</button>
+      <button class="btn btn-primary btn-start hidden" id="startBtn">Lancer</button>
+    </footer>
   </section>
 
   <!-- Partie -->
   <section class="screen hidden" id="screen-race">
-    <div class="hud">
+    <div class="hud" id="hud">
       <div class="hud-tl">
         <div class="race-only">
           <div class="hud-pos"><span id="hudPos">1</span><sup id="hudPosSuf">er</sup><small id="hudPosOf">/8</small></div>
-          <div class="hud-lap">Tour <b id="hudLap">1</b>/<span id="hudLaps">3</span></div>
-          <div class="hud-time" id="hudTime">0:00.000</div>
+          <div class="hud-sub"><span>Tour <b id="hudLap">1</b>/<span id="hudLaps">3</span></span><span id="hudTime">0:00.000</span></div>
         </div>
         <div class="arena-only hud-clock" id="hudClock">3:00</div>
-        <div class="hud-track" id="hudTrack"></div>
+        <div class="hud-title" id="hudTrack"></div>
       </div>
-      <div class="hud-score rocket-only">
-        <span class="sc-blue" id="hudScoreBlue">0</span><span class="sc-sep">–</span><span class="sc-orange" id="hudScoreOrange">0</span>
+      <div class="hud-tc">
+        <div class="hud-score rocket-only"><span class="sc-blue" id="hudScoreBlue">0</span><i></i><span class="sc-orange" id="hudScoreOrange">0</span></div>
+        <div class="hud-cops cops-only">
+          <div class="cops-role" id="hudRole"></div>
+          <div class="cops-round" id="hudRound"></div>
+          <div class="cops-obj" id="hudObjective"></div>
+          <div class="cops-money" id="hudMoney"><i id="hudMoneyBar"></i><span id="hudMoneyText"></span></div>
+          <div class="cops-wait" id="hudWait"></div>
+        </div>
       </div>
       <div class="hud-tr">
-        <div class="items-only">
+        <div class="items-only item-box">
           <div class="item-slot" id="hudItem"></div>
-          <div class="item-meta"><span id="hudItemCount"></span><span id="hudItemName"></span></div>
+          <div class="item-meta"><b id="hudItemCount"></b><span id="hudItemName"></span></div>
         </div>
-        <div class="power-slot hidden" id="hudPower">
-          <span id="hudPowerIcon"></span><b id="hudPowerCd"></b>
-          <small><kbd>R</kbd> <span id="hudPowerName"></span></small>
-        </div>
+        <div class="power-slot hidden" id="hudPower"><span id="hudPowerIcon"></span><b id="hudPowerCd"></b><small><kbd>R</kbd> <span id="hudPowerName"></span></small></div>
       </div>
       <ol class="hud-ranks" id="hudRanks"></ol>
-      <canvas class="hud-map" id="hudMap" width="190" height="190"></canvas>
+      <canvas class="hud-map" id="hudMap" width="220" height="220"></canvas>
+      <div class="hud-gadgets cops-only" id="hudGadgets"></div>
       <div class="hud-br">
         <div class="hud-drift race-only" id="hudDrift"><i></i><i></i><i></i></div>
-        <div class="hud-boost boost-only" id="hudBoost"><b id="hudBoostVal">33</b></div>
         <div class="hud-grav bumper-only" id="hudGrav"><i>⬇</i><b id="hudGravVal">×1.0</b></div>
+        <div class="hud-boost boost-only" id="hudBoost"><b id="hudBoostVal">33</b></div>
         <div class="hud-speed"><b id="hudSpeed">0</b><small>km/h</small></div>
       </div>
       <div class="hud-center" id="hudCenter"></div>
       <div class="hud-msg" id="hudMsg"></div>
-      <div class="hud-wrong hidden" id="hudWrong">↩ MAUVAIS SENS</div>
+      <div class="hud-wrong hidden" id="hudWrong">MAUVAIS SENS</div>
       <div class="hud-ink" id="hudInk"></div>
       <div class="hud-flash" id="hudFlash"></div>
-      <button class="hud-quit" id="quitRaceBtn" aria-label="Quitter la partie">✕</button>
+      <button class="hud-pause" id="pauseBtn" aria-label="Pause">❚❚</button>
       <div class="hud-loading" id="hudLoading">
         <div class="load-title" id="hudLoadText"></div>
         <div class="load-bar"><i id="hudLoadBar"></i></div>
-        <p class="muted">En attente des autres pilotes...</p>
+        <p class="load-tip" id="hudLoadTip"></p>
       </div>
       <div class="touch hidden" id="touchPad">
         <div class="touch-left">
-          <button data-touch="left">◀</button><button data-touch="right">▶</button>
+          <div class="stick" data-stick><i></i></div>
+          <div class="arrows"><button data-touch="left">◀</button><button data-touch="right">▶</button></div>
         </div>
         <div class="touch-right">
-          <button data-touch="power" class="t-power">🎲</button>
-          <button data-touch="item" class="t-item">🎁</button>
-          <button data-touch="drift" class="t-drift s-race">DRIFT</button>
-          <button data-touch="jump" class="t-drift s-car">SAUT</button>
-          <button data-touch="boost" class="t-boost s-car">🔥</button>
-          <button data-touch="brake" class="t-brake">▼</button>
+          <button data-touch="power" class="t-sm t-power">🎲</button>
+          <button data-touch="g3" class="t-sm s-cops">F</button>
+          <button data-touch="item" class="t-md">🎁</button>
+          <button data-touch="boost" class="t-md s-car">🔥</button>
+          <button data-touch="drift" class="t-lg s-race">DRIFT</button>
+          <button data-touch="jump" class="t-lg s-car">SAUT</button>
+          <button data-touch="brake" class="t-sm">▼</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Résultats -->
+  <!-- Résultats (podium 3D derrière) -->
   <section class="screen hidden" id="screen-results">
-    <div class="results">
+    <div class="results-panel">
       <p class="eyebrow" id="resTrack"></p>
       <h2 class="res-title" id="resTitle">Résultats</h2>
       <ol class="res-list" id="resList"></ol>
       <div class="res-actions" id="resActions">
-        <button class="btn btn-primary" id="nextBtn">Circuit suivant</button>
-        <button class="btn btn-ghost" id="retryBtn">Rejouer ce circuit</button>
-        <button class="btn btn-ghost" id="toLobbyBtn">Retour au salon</button>
+        <button class="btn btn-primary" id="againBtn">Circuit suivant</button>
+        <button class="btn btn-secondary" id="retryBtn">Rejouer</button>
+        <button class="btn btn-secondary" id="toLobbyBtn">Retour au salon</button>
       </div>
-      <p class="muted center" id="resHint"></p>
-      <button class="btn btn-link" data-action="leave">Quitter la partie</button>
+      <p class="muted" id="resHint"></p>
+      <button class="btn btn-ghost btn-sm" data-action="leave">Quitter la partie</button>
     </div>
   </section>
 
-  <!-- Barre flottante : volumes + aide -->
-  <div class="corner">
-    <label class="vol" title="Volume général">🔊<input type="range" id="volumeRange" min="0" max="100"></label>
-    <label class="vol" title="Volume du moteur">🏎️<input type="range" id="engineRange" min="0" max="100"></label>
-    <button class="help-fab" id="helpBtn" aria-label="Commandes">?</button>
+  <!-- Menu pause -->
+  <div class="overlay hidden" id="pauseMenu" role="dialog" aria-modal="true" aria-label="Pause">
+    <div class="pause-card">
+      <h2>Pause</h2>
+      <p class="muted">La partie continue pour les autres.</p>
+      <button class="btn btn-primary btn-lg" id="resumeBtn">Reprendre</button>
+      <button class="btn btn-secondary" data-open="settingsModal">Paramètres</button>
+      <button class="btn btn-secondary" data-open="helpModal">Commandes</button>
+      <button class="btn btn-danger" id="quitBtn">Quitter la partie</button>
+    </div>
   </div>
 
-  <div class="modal hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <div class="modal-card">
+  <!-- Paramètres -->
+  <div class="overlay hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="settingsTitle">Paramètres</h2>
+        <button class="icon-btn" data-close aria-label="Fermer">✕</button>
+      </div>
+      <nav class="tabs" id="settingsTabs">
+        <button data-tab="graphics" class="on">Graphismes</button>
+        <button data-tab="audio">Son</button>
+        <button data-tab="camera">Caméra</button>
+        <button data-tab="keys">Commandes</button>
+      </nav>
+      <div class="tab" data-tab="graphics">
+        <div class="set"><span class="label">Qualité</span><div class="seg" data-pref="quality">
+          <button data-value="low">Basse</button><button data-value="medium">Moyenne</button><button data-value="high">Haute</button></div>
+          <p class="muted">Basse : sans ombres, résolution réduite. Pour les PC modestes et les téléphones.</p></div>
+        <div class="set"><span class="label">Taille de l'interface de jeu <b id="hudScaleVal"></b></span>
+          <input type="range" min="0.8" max="1.4" step="0.05" id="hudScaleRange"></div>
+        <div class="set"><span class="label">Commandes tactiles</span><div class="seg" data-pref="touch">
+          <button data-value="joystick">Joystick</button><button data-value="buttons">Boutons</button></div></div>
+      </div>
+      <div class="tab hidden" data-tab="audio">
+        <div class="set"><span class="label">Volume général <b id="volVal"></b></span><input type="range" min="0" max="100" id="volumeRange"></div>
+        <div class="set"><span class="label">Moteur <b id="engVal"></b></span><input type="range" min="0" max="100" id="engineRange"></div>
+      </div>
+      <div class="tab hidden" data-tab="camera">
+        <div class="set"><span class="label">Champ de vision <b id="fovVal"></b></span><input type="range" min="-10" max="15" step="1" id="fovRange"></div>
+        <div class="set"><span class="label">Distance <b id="distVal"></b></span><input type="range" min="0.8" max="1.4" step="0.05" id="distRange"></div>
+        <div class="set"><span class="label">Secousses</span><div class="seg" data-pref="shake">
+          <button data-value="true">Oui</button><button data-value="false">Non</button></div></div>
+      </div>
+      <div class="tab hidden" data-tab="keys">
+        <p class="muted">Clique sur une touche puis appuie sur la nouvelle. Échap annule. Les manettes gardent leur disposition.</p>
+        <div class="keymap" id="keymap"></div>
+        <button class="btn btn-ghost btn-sm" id="resetKeysBtn">Touches par défaut</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commandes -->
+  <div class="overlay hidden" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal">
       <div class="modal-head">
         <h2 id="helpTitle">Commandes</h2>
-        <button class="icon-btn" id="helpClose" aria-label="Fermer">✕</button>
+        <button class="icon-btn" data-close aria-label="Fermer">✕</button>
       </div>
-      <h3>Course</h3>
-      <table class="keys">
-        <tr><th>Accélérer</th><td><kbd>↑</kbd> <kbd>Z</kbd>/<kbd>W</kbd> · manette <kbd>A</kbd></td></tr>
-        <tr><th>Freiner / reculer</th><td><kbd>↓</kbd> <kbd>S</kbd> · manette <kbd>B</kbd></td></tr>
-        <tr><th>Tourner</th><td><kbd>←</kbd> <kbd>→</kbd> <kbd>Q</kbd>/<kbd>A</kbd> <kbd>D</kbd> · stick gauche</td></tr>
-        <tr><th>Déraper / sauter</th><td><kbd>Espace</kbd> <kbd>Maj</kbd> · manette <kbd>RB</kbd>/<kbd>RT</kbd></td></tr>
-        <tr><th>Objet</th><td><kbd>E</kbd> <kbd>F</kbd> <kbd>Ctrl</kbd> · manette <kbd>LB</kbd>/<kbd>LT</kbd></td></tr>
-        <tr><th>Regarder / lancer derrière</th><td><kbd>C</kbd> (maintenir) · manette <kbd>Y</kbd></td></tr>
-      </table>
-      <h3>Arènes (tamponneuse, foot, bataille)</h3>
-      <table class="keys">
-        <tr><th>Avancer / reculer</th><td><kbd>↑</kbd>/<kbd>Z</kbd> <kbd>↓</kbd>/<kbd>S</kbd> · manette <kbd>RT</kbd>/<kbd>LT</kbd></td></tr>
-        <tr><th>Sauter (2× : figure)</th><td><kbd>Espace</kbd> · manette <kbd>A</kbd></td></tr>
-        <tr><th>Turbo</th><td><kbd>Maj</kbd> · manette <kbd>B</kbd></td></tr>
-        <tr><th>Glisser / vrille en l'air</th><td><kbd>X</kbd> <kbd>Alt</kbd> · manette <kbd>X</kbd></td></tr>
-        <tr><th>Caméra ballon (foot)</th><td><kbd>C</kbd> · manette <kbd>Y</kbd></td></tr>
-        <tr><th>Objet (bataille)</th><td><kbd>E</kbd> <kbd>F</kbd> · manette <kbd>LB</kbd></td></tr>
-      </table>
-      <h3>Partout</h3>
-      <table class="keys">
-        <tr><th>Pouvoir spécial</th><td><kbd>R</kbd> · manette croix ↑</td></tr>
-        <tr><th>Klaxon</th><td><kbd>H</kbd> · manette clic du stick gauche</td></tr>
-        <tr><th>Emotes</th><td><kbd>1</kbd> 😂 <kbd>2</kbd> 😡 <kbd>3</kbd> 👍 <kbd>4</kbd> GG <kbd>5</kbd> 😱 <kbd>6</kbd> 🔥</td></tr>
-      </table>
-      <h3>Astuces</h3>
-      <ul class="tips">
-        <li><b>Mini-turbo</b> : maintiens le dérapage dans un virage. Les étincelles passent du bleu à l'orange puis au violet : relâche pour un turbo de plus en plus long.</li>
-        <li><b>Loopings</b> : prends le tapis orange juste avant, sinon tu n'auras pas l'élan pour passer en haut.</li>
-        <li><b>Figure</b> : appuie sur dérapage juste après un tremplin pour un petit turbo à l'atterrissage.</li>
-        <li><b>Départ turbo</b> : accélère juste après le « 2 » du compte à rebours.</li>
-        <li><b>Foot</b> : saute deux fois en tenant une direction pour faire une figure qui frappe fort. Roule sur les murs pour reprendre le ballon.</li>
-        <li><b>Tamponneuse</b> : percute de côté pour retourner, et pousse vers le bord pour éjecter. Surveille la gravité !</li>
-      </ul>
-      <p class="rules-more"><a href="tuto.html" target="_blank" rel="noopener">Le tuto complet : installation et lancement d'une partie</a></p>
+      <div id="helpBody"></div>
+      <p><a href="tuto.html" target="_blank" rel="noopener">Le tuto complet</a></p>
     </div>
   </div>
 

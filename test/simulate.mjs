@@ -216,5 +216,27 @@ if (!only || only === 'arena') {
   }
 }
 
+if (!only || only === 'cops') {
+  for (const [rule, city] of [['heist', 'centre'], ['hunt', 'usine'], ['infect', 'port'], ['escape', 'centre']]) {
+    console.log(`\nPolice contre voleurs : ${rule} (${city}) :`);
+    const F = fakeRoom();
+    const t0 = Date.now();
+    startGame(F, { mode: 'cops', copsRule: rule, city, matchTime: 1, bots: true });
+    F.run(600, () => F.room.phase === 'results');
+    const evs = F.events;
+    const count = (type) => evs.filter((e) => e.type === type).length;
+    const st = F.got.get('host:state');
+    const snap = F.got.get('host:snap');
+    if (snap && snap.k.some((k) => k.slice(1, 11).some((x) => !isFinite(x)))) fail('positions invalides (NaN)');
+    const ends = evs.filter((e) => e.type === 'roundEnd').map((e) => e.winner);
+    console.log(`  manches : ${ends.length} (gagnants ${ends.join(', ')}), arrestations ${count('arrest')}, sacs ramassés ${count('bag')}, dépôts ${count('deposit')}, libérations ${count('freed')}, évasions ${count('escaped')}, gadgets ${count('gadget')}  [${((Date.now() - t0) / 1000).toFixed(1)} s]`);
+    if (count('arrest') < 1) fail('aucune arrestation');
+    if (rule === 'heist' && count('bag') < 1) fail('aucun sac ramassé');
+    if (st.phase !== 'results') fail(`partie non terminée (phase ${st.phase})`);
+    else console.log(`  classement : ${st.game.results.map((x) => `${x.rank}. ${x.name} (${x.score})`).join(', ')}`);
+    F.room.destroy();
+  }
+}
+
 console.log(failures ? `\n${failures} problème(s).` : '\nTout est bon.');
 process.exit(failures ? 1 : 0);

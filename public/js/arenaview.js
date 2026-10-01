@@ -2,7 +2,6 @@
 
 import * as THREE from './three.js';
 import { RoundedBoxGeometry } from './three.js';
-import { ARENAS } from './arena.js';
 import { boostPads, battleBoxes } from './modes/arenagame.js';
 import * as TX from './textures.js';
 import { models, instanceSync } from './assets.js';
@@ -21,14 +20,14 @@ function skyDome(top, bottom) {
   return new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), mat);
 }
 
-function lights(group, { sun = 1.6, hemi = ['#ffffff', '#556080', 1.1], night = false } = {}) {
+function lights(group, { sun = 1.6, hemi = ['#ffffff', '#556080', 1.1], night = false, extent = 90 } = {}) {
   group.add(new THREE.HemisphereLight(hemi[0], hemi[1], hemi[2]));
   const d = new THREE.DirectionalLight(night ? '#c9d4ff' : '#fff1dd', sun);
-  d.position.set(-60, 120, 40);
+  d.position.set(-60, 120 + extent * 0.5, 40);
   d.castShadow = true;
-  d.shadow.mapSize.set(2048, 2048);
+  d.shadow.mapSize.set(extent > 120 ? 4096 : 2048, extent > 120 ? 4096 : 2048);
   const sc = d.shadow.camera;
-  sc.left = -90; sc.right = 90; sc.top = 90; sc.bottom = -90; sc.near = 10; sc.far = 320;
+  sc.left = -extent; sc.right = extent; sc.top = extent; sc.bottom = -extent; sc.near = 10; sc.far = 320 + extent * 2;
   d.shadow.bias = -0.0004;
   d.shadow.normalBias = 0.04;
   group.add(d, d.target);
@@ -81,11 +80,10 @@ function netTexture(color) {
   return t;
 }
 
-async function rocketArena(group, animated) {
-  const A = ARENAS.rocket;
+async function rocketArena(group, animated, A) {
   const sky = skyDome('#0b1440', '#3a3a7a');
   group.add(sky);
-  lights(group, { sun: 1.4, hemi: ['#dfe6ff', '#304060', 1.2] });
+  lights(group, { sun: 1.4, hemi: ['#dfe6ff', '#304060', 1.2], extent: Math.max(A.X, A.Z) + 20 });
 
   // Sol (partie plate) avec le marquage.
   const fx = A.X - A.R;
@@ -153,7 +151,7 @@ async function rocketArena(group, animated) {
   }
 
   // Pastilles de turbo.
-  const pads = boostPads().map((p) => {
+  const pads = boostPads(A).map((p) => {
     const g = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(p.big ? 1.8 : 1.1, p.big ? 2.1 : 1.3, 0.2, 20), new THREE.MeshStandardMaterial({ color: '#333', emissive: '#ff8a1f', emissiveIntensity: 0.4 }));
     base.position.y = 0.1;
@@ -202,11 +200,10 @@ async function rocketArena(group, animated) {
   };
 }
 
-async function bumperArena(group, animated) {
-  const A = ARENAS.bumper;
+async function bumperArena(group, animated, A) {
   const sky = skyDome('#ff6a88', '#ffd8a8');
   group.add(sky);
-  lights(group, { sun: 1.6, hemi: ['#fff0f0', '#a46080', 1.15] });
+  lights(group, { sun: 1.6, hemi: ['#fff0f0', '#a46080', 1.15], extent: A.radius + 15 });
 
   const top = new THREE.MeshStandardMaterial({ map: TX.stripeTexture('#3b2a6b', '#4c3a85', 10), roughness: 0.7 });
   top.map.repeat.set(6, 6);
@@ -247,7 +244,7 @@ async function bumperArena(group, animated) {
   const rand = makeRng(77);
   for (let i = 0; i < 18; i++) {
     const a = rand() * Math.PI * 2;
-    const r = 90 + rand() * 160;
+    const r = A.radius + 50 + rand() * 160;
     const o = instanceSync(lib.get('platformer/block-grass-large'), { height: 8 + rand() * 10 });
     o.position.set(Math.cos(a) * r, -30 + rand() * 50, Math.sin(a) * r);
     group.add(o);
@@ -266,8 +263,7 @@ async function bumperArena(group, animated) {
   };
 }
 
-async function battleArena(group, animated) {
-  const A = ARENAS.battle;
+async function battleArena(group, animated, A) {
   const sky = skyDome('#56c1ff', '#fff7d6');
   group.add(sky);
   lights(group, { sun: 1.7, hemi: ['#ffffff', '#6a9a3a', 1.1] });
@@ -361,11 +357,13 @@ async function battleArena(group, animated) {
   };
 }
 
-export async function buildArena(kind) {
+// def : définition de l'arène à son échelle (world.def).
+export async function buildArena(def) {
   const group = new THREE.Group();
   const animated = [];
+  const kind = def.kind;
   const builder = kind === 'rocket' ? rocketArena : kind === 'bumper' ? bumperArena : battleArena;
-  const extra = await builder(group, animated);
+  const extra = await builder(group, animated, def);
   return {
     group,
     ...extra,

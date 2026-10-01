@@ -2,7 +2,10 @@
 
 import { add, sub, len, norm, scale, addScaled, dot } from './vec.js';
 
-export const ARENA_HIT = { banana: 1.3, green: 1.2, red: 1.2, crate: 1.9 };
+export const ARENA_HIT = { banana: 1.3, green: 1.2, red: 1.2, crate: 1.9, spike: 3.2, cone: 1.1, oil: 3.4 };
+// Objets qui restent en place et piègent chaque véhicule une seule fois (herse, huile).
+export const PERSISTENT = { spike: 12, oil: 14, smoke: 7 };
+export const SMOKE_RADIUS = 8;
 export const ARENA_BOMB_RADIUS = 9;
 
 // Tirage d'objet en bataille (pas d'éclair, ni de triple turbo trop puissant).
@@ -25,8 +28,12 @@ export class ArenaEntities {
   spawn(type, owner, from, opts = {}) {
     const id = ++this.seq;
     const dir = opts.back ? scale(from.fwd, -1) : from.fwd;
-    const e = { id, type, owner, age: 0, p: [...from.p], v: [0, 0, 0], bounces: 0, target: opts.target || null, grounded: false };
-    if (type === 'banana' || type === 'crate') {
+    const e = { id, type, owner, age: 0, p: [...from.p], v: [0, 0, 0], bounces: 0, target: opts.target || null, grounded: false, hits: new Set() };
+    if (type === 'spike' || type === 'oil' || type === 'smoke' || type === 'cone') {
+      addScaled(e.p, from.fwd, opts.dist ?? -5);
+      if (opts.offset) addScaled(e.p, opts.offset, 1);
+      e.yaw = Math.atan2(from.fwd[0], from.fwd[2]);
+    } else if (type === 'banana' || type === 'crate') {
       addScaled(e.p, from.fwd, opts.back === false ? 4 : -3.2);
       if (opts.back === false) e.v = add(scale(from.fwd, from.speed + 14), [0, 7, 0]);
       if (opts.offset) addScaled(e.p, opts.offset, 1);
@@ -51,7 +58,8 @@ export class ArenaEntities {
     const g = W.gravity(t);
     for (const e of [...this.list.values()]) {
       e.age += dt;
-      if (e.type === 'banana' || e.type === 'crate' || e.type === 'bomb') {
+      if (PERSISTENT[e.type] && e.age > PERSISTENT[e.type]) { this.remove(e.id); continue; }
+      if (e.type === 'banana' || e.type === 'crate' || e.type === 'bomb' || e.type === 'spike' || e.type === 'oil' || e.type === 'smoke' || e.type === 'cone') {
         if (!e.grounded) {
           addScaled(e.v, g, dt);
           addScaled(e.p, e.v, dt);
@@ -120,10 +128,12 @@ export class ArenaEntities {
     this.events.push({ type: 'boom', id: e.id, x: e.p[0], y: e.p[1], z: e.p[2], owner: e.owner });
   }
 
-  touching(p, ownerId) {
+  // Objet touché par le véhicule carId (ownerId : son lanceur, ignoré au début).
+  touching(p, ownerId, carId = ownerId) {
     for (const e of this.list.values()) {
-      if (e.type === 'bomb') continue;
-      if (e.owner === ownerId && e.age < 0.6) continue;
+      if (e.type === 'bomb' || e.type === 'smoke') continue;
+      if (e.owner === ownerId && e.age < (PERSISTENT[e.type] ? 2 : 0.6)) continue;
+      if (PERSISTENT[e.type] && e.hits.has(carId)) continue;
       const r = (ARENA_HIT[e.type] || 1.2) + 1.1;
       if (len(sub(e.p, p)) < r) return e;
     }
@@ -132,6 +142,6 @@ export class ArenaEntities {
 
   snapshot() {
     const r = (v) => Math.round(v * 100) / 100;
-    return [...this.list.values()].map((e) => [e.id, e.type, r(e.p[0]), r(e.p[1]), r(e.p[2]), e.owner, Math.round(e.age * 10) / 10]);
+    return [...this.list.values()].map((e) => [e.id, e.type, r(e.p[0]), r(e.p[1]), r(e.p[2]), e.owner, Math.round(e.age * 10) / 10, r(e.yaw || 0)]);
   }
 }

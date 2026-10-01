@@ -2,7 +2,7 @@
 // Chaque joueur simule sa propre voiture et envoie sa position ; l'hôte simule les bots, le ballon,
 // les objets, arbitre les buts, les éjections et les ballons crevés.
 
-import { makeWorld, ARENAS, goalScored, bumperGravity, BUMPER_PHASES, PHASE_LEN } from '../arena.js';
+import { makeWorld, arenaScale, goalScored, bumperGravity, BUMPER_PHASES } from '../arena.js';
 import { Car3D, Ball, collideCars, hitBall, CF } from '../car3d.js';
 import { ArenaBot } from '../ai3d.js';
 import { ArenaEntities, rollArenaItem, ARENA_BOMB_RADIUS } from '../arenaitems.js';
@@ -19,17 +19,17 @@ const GOAL_PAUSE = 3500;
 const KICKOFF = 3000;
 const BOX_RESPAWN = 3000;
 
-// Emplacements de départ.
-export function spawnPoints(mode, count) {
-  if (mode === 'bumper') {
-    const R = ARENAS.bumper.radius * 0.62;
+// Emplacements de départ (def : définition de l'arène, à son échelle).
+export function spawnPoints(def, count) {
+  if (def.kind === 'bumper') {
+    const R = def.radius * 0.62;
     return Array.from({ length: count }, (_, i) => {
       const a = (i / count) * Math.PI * 2 + 0.3;
       return { p: [Math.cos(a) * R, 1.2, Math.sin(a) * R], yaw: Math.atan2(-Math.cos(a), -Math.sin(a)) };
     });
   }
-  if (mode === 'battle') {
-    const h = ARENAS.battle.half - 8;
+  if (def.kind === 'battle') {
+    const h = def.half - 8;
     const spots = [[-h, -h], [h, h], [h, -h], [-h, h], [0, -h], [0, h], [-h, 0], [h, 0]];
     return spots.slice(0, count).map(([x, z]) => ({ p: [x, 1.2, z], yaw: Math.atan2(-x, -z) }));
   }
@@ -37,25 +37,27 @@ export function spawnPoints(mode, count) {
 }
 
 // Engagement du foot (équipe bleue côté -Z, attaque vers +Z).
-export function kickoffSpots(team, n) {
+export function kickoffSpots(def, team, n) {
   const s = team === 'blue' ? -1 : 1;
+  const k = def.scale;
   const base = [[-22, 34], [22, 34], [-3, 52], [3, 52], [0, 62]];
   return base.slice(0, n).map(([x, z]) => {
-    const p = [x * -s, 1.2, z * s];
+    const p = [x * -s * k, 1.2, z * s * k];
     return { p, yaw: Math.atan2(-p[0], -p[2]) };
   });
 }
 
 // Pastilles de turbo du foot : 6 grosses (100 %), 18 petites (+12).
-export function boostPads() {
-  const A = ARENAS.rocket;
+export function boostPads(def) {
+  const A = def;
+  const k = def.scale;
   const pads = [];
   for (const sx of [-1, 1]) {
     pads.push({ p: [sx * (A.X - 7), 0, 0], big: true });
     for (const sz of [-1, 1]) pads.push({ p: [sx * (A.X - 8), 0, sz * (A.Z - 10)], big: true });
   }
   for (const [x, z] of [[0, -30], [0, 30], [-18, -18], [18, -18], [-18, 18], [18, 18], [-30, 0], [30, 0], [0, -52], [0, 52],
-    [-24, -46], [24, -46], [-24, 46], [24, 46], [-38, -30], [38, -30], [-38, 30], [38, 30]]) pads.push({ p: [x, 0, z], big: false });
+    [-24, -46], [24, -46], [-24, 46], [24, 46], [-38, -30], [38, -30], [-38, 30], [38, 30]]) pads.push({ p: [x * k, 0, z * k], big: false });
   return pads;
 }
 
@@ -67,8 +69,6 @@ export function battleBoxes() {
 export function createArenaGame(ctx, id, mode) {
   const { now, rand } = ctx;
   const settings = { ...ctx.settings };
-  const world = makeWorld(mode);
-  const A = world.def;
 
   // ------------------------------------------------------------ participants
   const humans = ctx.humans();
@@ -98,14 +98,19 @@ export function createArenaGame(ctx, id, mode) {
     }
   }
 
+  // L'arène grandit avec le nombre de véhicules.
+  const arenaK = arenaScale(mode, roster.length);
+  const world = makeWorld(mode, arenaK);
+  const A = world.def;
+
   const cars = new Map();
-  const starts = spawnPoints(mode, roster.length);
+  const starts = spawnPoints(A, roster.length);
   const teamIndex = { blue: 0, orange: 0 };
   roster.forEach((r, i) => {
     let spot = starts[i];
     if (mode === 'rocket') {
       const n = roster.filter((x) => x.team === r.team).length;
-      spot = kickoffSpots(r.team, n)[teamIndex[r.team]++];
+      spot = kickoffSpots(A, r.team, n)[teamIndex[r.team]++];
     }
     r.spawn = spot;
     const weight = vehicleById(r.vehicle).stats.weight;
@@ -126,7 +131,7 @@ export function createArenaGame(ctx, id, mode) {
   });
 
   const ball = mode === 'rocket' ? new Ball(world, A.ballR) : null;
-  const pads = mode === 'rocket' ? boostPads().map((p) => ({ ...p, at: 0 })) : [];
+  const pads = mode === 'rocket' ? boostPads(A).map((p) => ({ ...p, at: 0 })) : [];
   const boxes = mode === 'battle' ? battleBoxes().map((b) => ({ ...b, at: 0 })) : [];
   const entities = mode === 'battle' ? new ArenaEntities(world) : null;
   const score = [0, 0]; // bleu, orange
@@ -151,7 +156,7 @@ export function createArenaGame(ctx, id, mode) {
     results: null,
     humanIds: () => roster.filter((r) => !r.isBot).map((r) => r.id),
     info: () => ({
-      id, mode, arena: A.name, grid: roster.map((r) => ({ id: r.id, name: r.name, vehicle: r.vehicle, color: r.color, horn: r.horn, isBot: r.isBot, team: r.team || null, spawn: r.spawn })),
+      id, mode, arena: A.name, scale: arenaK, grid: roster.map((r) => ({ id: r.id, name: r.name, vehicle: r.vehicle, color: r.color, horn: r.horn, isBot: r.isBot, team: r.team || null, spawn: r.spawn })),
       matchTime: settings.matchTime, balloons: settings.balloons, powers: mode === 'battle' && settings.powers, items: true,
     }),
     handlers: {},
@@ -179,7 +184,7 @@ export function createArenaGame(ctx, id, mode) {
     const idx = { blue: 0, orange: 0 };
     const counts = { blue: roster.filter((r) => r.team === 'blue').length, orange: roster.filter((r) => r.team === 'orange').length };
     for (const c of alive()) {
-      const spot = kickoffSpots(c.team, counts[c.team])[idx[c.team]++];
+      const spot = kickoffSpots(A, c.team, counts[c.team])[idx[c.team]++];
       poses[c.id] = spot;
       c.p = [...spot.p];
       c.q = qYaw(spot.yaw);
@@ -428,7 +433,7 @@ export function createArenaGame(ctx, id, mode) {
         if (mode === 'bumper') {
           if (car.p[1] < -14) {
             down(c, 'fall');
-            const s = spawnPoints('bumper', 8)[Math.floor(rand() * 8)];
+            const s = spawnPoints(A, 8)[Math.floor(rand() * 8)];
             car.place(s.p[0], s.p[1] + 2, s.p[2], s.yaw);
           } else if (car.downTime > 1.6) {
             down(c, 'flip');
@@ -452,7 +457,7 @@ export function createArenaGame(ctx, id, mode) {
       if (ball && phase !== 'goal' && !locked) {
         const b = ball.step(SUB, wt);
         if (b > 6) ballHits++;
-        const side = goalScored(ball);
+        const side = goalScored(ball, A);
         if (side) goal(side);
       }
       if (entities) entities.update(SUB, list.filter((c) => !c.out).map((c) => ({ id: c.id, p: c.p })), wt);

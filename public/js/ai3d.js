@@ -1,7 +1,6 @@
 // Pilotes ordinateur des arènes (simulés chez l'hôte) : foot, tamponneuse, bataille.
 
 import { sub, len, norm, qRotInv, add, scale } from './vec.js';
-import { ARENAS } from './arena.js';
 import { clamp } from './util.js';
 
 // Commandes pour aller vers une cible (en marche arrière si elle est juste derrière).
@@ -61,7 +60,7 @@ export class ArenaBot {
   }
 
   rocket(dt, ctx) {
-    const A = ARENAS.rocket;
+    const A = this.car.world.def;
     const car = this.car;
     const ball = ctx.ball;
     const s = ctx.team;
@@ -121,7 +120,7 @@ export class ArenaBot {
 
   bumper(dt, ctx) {
     const car = this.car;
-    const A = ARENAS.bumper;
+    const A = this.car.world.def;
     const r = Math.hypot(car.p[0], car.p[2]);
     // Trop près du bord en regardant dehors : retour au centre.
     const f = car.fwd;
