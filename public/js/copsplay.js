@@ -2,6 +2,7 @@
 // caméra, interpolation) et y ajoute les rôles, la ville, les sacs, la prison et les gadgets.
 
 import * as THREE from './three.js';
+import { applyEnvironment } from './envmap.js';
 import { ArenaPlay } from './arenaplay.js';
 import { cityById, buildCity, makeCityWorld, nearestNode } from './city.js';
 import { buildCityView } from './cityview.js';
@@ -21,7 +22,7 @@ const COP_COLOR = '#4da3ff';
 const THIEF_COLOR = '#ff5a5a';
 const SEE_RANGE = 70; // la police voit les voleurs sur la carte à moins de 70 m
 const OBJECTIVES = {
-  heist: { cop: 'Arrête les voleurs avant qu’ils ne remplissent leur planque.', thief: 'Ramasse les sacs 💰 et rapporte-les à la planque. Libère tes complices.' },
+  heist: { cop: 'Arrête les voleurs avant qu’ils ne remplissent leur planque.', thief: 'Ramasse les sacs d’argent et rapporte-les à la planque. Libère tes complices.' },
   hunt: { cop: 'Arrête tous les voleurs avant la fin du temps.', thief: 'Ne te fais pas attraper jusqu’à la fin du temps.' },
   infect: { cop: 'Attrape les voleurs : ils rejoignent la police.', thief: 'Sois le dernier voleur en liberté.' },
   escape: { cop: 'Empêche les voleurs d’atteindre les sorties.', thief: 'Rejoins une SORTIE (ouverte au bout de 20 s).' },
@@ -58,6 +59,7 @@ export class CopsPlay extends ArenaPlay {
     scene.add(view.group);
     scene.fog = view.fog;
     scene.background = view.background;
+    applyEnvironment(this.renderer, scene, view.env);
     this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2600);
     this.fx = new Particles(scene);
 
@@ -88,7 +90,7 @@ export class CopsPlay extends ArenaPlay {
     this.hud = new Hud('cops');
     this.applyMyRole(true);
     if (matchMedia('(pointer: coarse)').matches) this.input.bindTouch(this.hud.showTouch('car'));
-    this.hud.setTitle(`${COPS_RULES[this.rule].icon} ${COPS_RULES[this.rule].name} · ${this.city.def.name}`);
+    this.hud.setTitle(`${COPS_RULES[this.rule].name} · ${this.city.def.name}`, COPS_RULES[this.rule].icon);
     this.prepareMap();
     this.resize = () => {
       const w = window.innerWidth;
@@ -107,7 +109,7 @@ export class CopsPlay extends ArenaPlay {
     const cop = entry.role === 'cop';
     const vehicle = vehicleById(cop ? 'police' : entry.baseVehicle);
     const view = new KartView(vehicle, {
-      name: `${cop ? '🚓' : '🦹'} ${entry.name}`, showName: entry.id !== this.me, fx: this.fx,
+      name: entry.name, tagIcon: cop ? 'policecar' : 'thief', showName: entry.id !== this.me, fx: this.fx,
       color: cop ? null : entry.baseColor, tagColor: cop ? COP_COLOR : THIEF_COLOR, arena: true,
     });
     await view.load();
@@ -129,7 +131,7 @@ export class CopsPlay extends ArenaPlay {
     if (this.car) this.car.speedMul = role === 'cop' ? 1.04 : 1;
     this.gadgets = role ? GADGETS[role] : [];
     this.hud.setRole(role, OBJECTIVES[this.rule][role]);
-    if (!silent) this.hud.bigText(role === 'cop' ? '🚓 POLICE' : '🦹 VOLEUR', role === 'cop' ? 'go' : 'final', 2500);
+    if (!silent) this.hud.bigText(role === 'cop' ? 'POLICE' : 'VOLEUR', role === 'cop' ? 'go' : 'final', 2500, role === 'cop' ? 'policecar' : 'thief');
   }
 
   focusVec() {
@@ -182,7 +184,7 @@ export class CopsPlay extends ArenaPlay {
       case 'round': this.startRound(ev); break;
       case 'roundEnd': {
         const mine = this.role === ev.winner;
-        this.hud.bigText(ev.winner === 'cop' ? '🚓 LA POLICE GAGNE' : '🦹 LES VOLEURS GAGNENT', mine ? 'go' : 'final', 4000);
+        this.hud.bigText(ev.winner === 'cop' ? 'LA POLICE GAGNE' : 'LES VOLEURS GAGNENT', mine ? 'go' : 'final', 4000, ev.winner === 'cop' ? 'policecar' : 'thief');
         this.hud.message(`Manche ${ev.round + 1}/${ev.rounds} terminée`, 3500, 'small');
         sfx.whistle();
         this.lockedUntil = performance.now() + 99999;
@@ -353,7 +355,7 @@ export class CopsPlay extends ArenaPlay {
       this.gadgetReady[slot] = performance.now() + res.readyIn;
       if (g.id === 'nitro') { car.effect('turbo', 1.6); sfx.boost(); }
       if (g.id === 'sirene') { car.effect('turbo', 2.5); this.revealUntil = performance.now() + 5000; }
-      this.hud.message(`${g.icon} ${g.name}`, 900, 'small');
+      this.hud.message(g.name, 900, 'small', g.icon);
     });
   }
 
@@ -415,8 +417,9 @@ export class CopsPlay extends ArenaPlay {
     if (!this.hud) return;
     const list = [...this.cars.values()].sort((a, b) => b.score - a.score);
     this.hud.ranks(list.map((c, i) => ({
-      rank: i + 1, name: `${c.role === 'cop' ? '🚓' : '🦹'} ${c.name}`, color: c.role === 'cop' ? COP_COLOR : THIEF_COLOR, me: c.id === this.me,
-      extra: c.jailed ? '🔒' : c.gone ? '—' : c.bags ? '💰'.repeat(c.bags) : `${c.score}`,
+      rank: i + 1, name: c.name, icon: c.role === 'cop' ? 'policecar' : 'thief', color: c.role === 'cop' ? COP_COLOR : THIEF_COLOR, me: c.id === this.me,
+      extra: c.jailed || c.bags ? '' : c.gone ? '—' : `${c.score}`,
+      badges: c.jailed ? ['lock'] : c.bags ? Array(c.bags).fill('moneybag') : null,
     })));
   }
 
@@ -424,9 +427,9 @@ export class CopsPlay extends ArenaPlay {
     const C = this.city;
     const blocks = C.blocks.filter((b) => b.type === 'B').map((b) => [b.cx, b.cz, C.B / 2 - C.sidewalk]);
     const marks = [
-      ...C.hideouts.map((h) => ({ x: h.p[0], z: h.p[2], icon: '$', color: '#ffd23f' })),
-      ...(this.rule === 'escape' ? C.exits.map((e) => ({ x: e.p[0], z: e.p[2], icon: '⇥', color: '#38d96b' })) : []),
-      ...(C.prison ? [{ x: C.prison.c[0], z: C.prison.c[2], icon: '#', color: '#ff5a5a' }] : []),
+      ...C.hideouts.map((h) => ({ x: h.p[0], z: h.p[2], icon: '$', img: 'moneybag', color: '#ffd23f' })),
+      ...(this.rule === 'escape' ? C.exits.map((e) => ({ x: e.p[0], z: e.p[2], icon: '>', img: 'door', color: '#38d96b' })) : []),
+      ...(C.prison ? [{ x: C.prison.c[0], z: C.prison.c[2], icon: '#', img: 'lock', color: '#ff5a5a' }] : []),
     ];
     this.hud.prepareCityMap(C.W, C.D, blocks, this.rule === 'heist' ? marks : marks.filter((m) => m.icon !== '$'));
   }

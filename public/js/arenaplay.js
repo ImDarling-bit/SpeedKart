@@ -3,6 +3,7 @@
 // local pour que nos frappes soient immédiates ; l'hôte reprend la main entre deux touches.
 
 import * as THREE from './three.js';
+import { applyEnvironment } from './envmap.js';
 import { makeWorld, bumperGravity } from './arena.js';
 import { Car3D, Ball, collideCars, hitBall, CF, CAR_MODES } from './car3d.js';
 import { spawnPoints, boostPads, battleBoxes } from './modes/arenagame.js';
@@ -11,6 +12,7 @@ import { KartView, visFromCar } from './kartview.js';
 import { Particles, entityMesh } from './fx.js';
 import { Input } from './input.js';
 import { Hud, EMOTES } from './hud.js';
+import { ico } from './icons.js';
 import { ITEMS } from './items.js';
 import { ARENA_HIT, PERSISTENT } from './arenaitems.js';
 import { powerById, applyPowerToCar } from './powers.js';
@@ -75,6 +77,7 @@ export class ArenaPlay {
     scene.add(arena.group);
     scene.fog = arena.fog;
     scene.background = arena.background;
+    applyEnvironment(this.renderer, scene, arena.env);
     this.camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2600);
     this.fx = new Particles(scene, particleBudget());
 
@@ -341,7 +344,7 @@ export class ArenaPlay {
     if (!P) return;
     const mine = ev.id === this.me;
     const who = this.cars.get(ev.id);
-    if (!mine) this.hud.message(`${who ? who.name : '?'} : ${P.icon} ${P.name}`, 1600, 'small');
+    if (!mine) this.hud.message(`${who ? who.name : '?'} : ${P.name}`, 1600, 'small', P.icon);
     if (P.target === 'near' || ev.power === 'onde') this.fx.burst(ev.x, ev.y + 1, ev.z, 40, { color: ev.power === 'gel' ? '#a8f0ff' : '#ffffff', size: 1.2, size1: 0.2, speed: 22, drag: 4, life: 0.6 });
     if (ev.power === 'gel') sfx.freeze(); else if (!mine) sfx.power();
     const car = this.car;
@@ -572,7 +575,7 @@ export class ArenaPlay {
       applyPowerToCar(car, res.power, 'self');
       if (res.item) { this.item = res.item; this.itemCount = res.count || 1; this.renderHudItem(); }
       const P = powerById(res.power);
-      this.hud.message(`${P.icon} ${P.name} !`, 1200);
+      this.hud.message(`${P.name} !`, 1200, '', P.icon);
     });
   }
 
@@ -732,7 +735,7 @@ export class ArenaPlay {
     $('hudSpeed').textContent = car ? Math.round(car.speed * 3.6) : '–';
     if (this.rolling) {
       const keys = ['banana', 'green', 'red', 'bomb', 'mushroom', 'star', 'shield'];
-      $('hudItem').textContent = ITEMS[keys[Math.floor(performance.now() / 70) % keys.length]].icon;
+      $('hudItem').innerHTML = ico(ITEMS[keys[Math.floor(performance.now() / 70) % keys.length]].icon);
       $('hudItem').classList.add('rolling');
     }
     if (this.info.powers) this.hud.setPower(this.power ? powerById(this.power) : null, this.powerCd);
@@ -745,7 +748,7 @@ export class ArenaPlay {
   renderHudItem() {
     const el = $('hudItem');
     el.classList.remove('rolling');
-    el.textContent = this.item ? ITEMS[this.item].icon : '';
+    el.innerHTML = this.item ? ico(ITEMS[this.item].icon) : '';
     $('hudItemCount').textContent = this.itemCount > 1 ? `×${this.itemCount}` : '';
     $('hudItemName').textContent = this.item ? ITEMS[this.item].name : '';
   }
@@ -756,7 +759,8 @@ export class ArenaPlay {
     else list.sort((a, b) => b.score - a.score);
     this.hud.ranks(list.map((c, i) => ({
       rank: i + 1, name: c.name, color: c.color, me: c.id === this.me,
-      extra: this.mode === 'battle' ? (c.outFlag ? '💀' : '🎈'.repeat(Math.max(0, c.extra))) : this.mode === 'rocket' ? `${c.score}` : `${c.score} pts`,
+      extra: this.mode === 'battle' ? '' : this.mode === 'rocket' ? `${c.score}` : `${c.score} pts`,
+      badges: this.mode === 'battle' ? (c.outFlag ? ['skull'] : Array(Math.max(0, c.extra)).fill('balloon')) : null,
     })));
   }
 

@@ -2,6 +2,7 @@
 
 import * as THREE from './three.js';
 import { makeRng } from './util.js';
+import { hasIcon, iconImage } from './icons.js';
 
 function canvas(w, h) {
   const c = document.createElement('canvas');
@@ -214,22 +215,33 @@ export function softDot(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255
 
 // Bulle d'emote (mise en cache : il n'y en a que quelques-unes).
 const emoteCache = new Map();
+// Bulle d'emote : icône du jeu (nom d'icône) ou texte court.
 export function emoteTexture(text) {
   if (emoteCache.has(text)) return emoteCache.get(text);
   const [c, g] = canvas(128, 128);
-  g.fillStyle = 'rgba(255,255,255,0.95)';
-  g.beginPath();
-  g.arc(64, 58, 50, 0, Math.PI * 2);
-  g.fill();
-  g.beginPath();
-  g.moveTo(50, 100); g.lineTo(64, 124); g.lineTo(78, 100);
-  g.fill();
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillStyle = '#1a0f3a';
-  g.font = text.length > 2 ? 'bold 44px Arial, sans-serif' : '58px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-  g.fillText(text, 64, 62);
-  const t = tex(c, { repeat: false });
+  let t = null;
+  const draw = () => {
+    g.clearRect(0, 0, 128, 128);
+    g.fillStyle = 'rgba(255,255,255,0.95)';
+    g.beginPath();
+    g.arc(64, 58, 50, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(50, 100); g.lineTo(64, 124); g.lineTo(78, 100);
+    g.fill();
+    if (hasIcon(text)) {
+      const img = iconImage(text, () => { draw(); if (t) t.needsUpdate = true; });
+      if (img.complete) g.drawImage(img, 26, 20, 76, 76);
+    } else {
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillStyle = '#1a0f3a';
+      g.font = 'bold 44px Arial, sans-serif';
+      g.fillText(text, 64, 62);
+    }
+  };
+  draw();
+  t = tex(c, { repeat: false });
   emoteCache.set(text, t);
   return t;
 }
@@ -292,18 +304,30 @@ export function stripeTexture(a, b, n = 8) {
   return tex(c);
 }
 
-export function nameTexture(text, color = '#ffffff') {
+// Étiquette de nom au-dessus d'un véhicule, avec une icône facultative à gauche.
+export function nameTexture(text, color = '#ffffff', icon = null) {
   const [c, g] = canvas(256, 64);
-  g.font = 'bold 34px Outfit, Arial, sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  const w = Math.min(250, g.measureText(text).width + 28);
-  g.fillStyle = 'rgba(10,10,30,0.6)';
-  const x = 128 - w / 2;
-  g.beginPath();
-  g.roundRect(x, 10, w, 44, 22);
-  g.fill();
-  g.fillStyle = color;
-  g.fillText(text, 128, 33);
-  return tex(c, { repeat: false });
+  let t = null;
+  const draw = () => {
+    g.clearRect(0, 0, 256, 64);
+    g.font = 'bold 34px Inter, Arial, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    const iw = icon ? 38 : 0;
+    const w = Math.min(250, g.measureText(text).width + 28 + iw);
+    g.fillStyle = 'rgba(10,10,30,0.6)';
+    const x = 128 - w / 2;
+    g.beginPath();
+    g.roundRect(x, 10, w, 44, 22);
+    g.fill();
+    if (icon) {
+      const img = iconImage(icon, () => { draw(); if (t) t.needsUpdate = true; });
+      if (img.complete) g.drawImage(img, x + 8, 15, 34, 34);
+    }
+    g.fillStyle = color;
+    g.fillText(text, 128 + iw / 2, 33, 240 - iw);
+  };
+  draw();
+  t = tex(c, { repeat: false });
+  return t;
 }

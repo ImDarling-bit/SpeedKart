@@ -3,6 +3,7 @@
 // les boîtes ramassées, les objets et pouvoirs utilisés, les coups reçus et l'arrivée.
 
 import * as THREE from './three.js';
+import { applyEnvironment } from './envmap.js';
 import { TrackPath } from './track.js';
 import { trackById } from './data/tracks.js';
 import { themeFor } from './data/themes.js';
@@ -18,6 +19,7 @@ import { KartView, visFromKart } from './kartview.js';
 import { Particles, entityMesh } from './fx.js';
 import { Input } from './input.js';
 import { Hud, EMOTES } from './hud.js';
+import { ico } from './icons.js';
 import { sfx, horn, engineStart, engineUpdate, engineStop, engineProfileFor } from './audio.js';
 import { formatTime, makeRng, lerpAngle, clamp } from './util.js';
 import { getSettings, particleBudget } from './settings.js';
@@ -78,6 +80,7 @@ export class Race {
     scene.add(world.group);
     scene.fog = world.fog;
     scene.background = world.background;
+    applyEnvironment(this.renderer, scene, world.env);
 
     this.camera = new THREE.PerspectiveCamera(72, 1, 0.1, 2600);
     this.fx = new Particles(scene, particleBudget());
@@ -308,7 +311,7 @@ export class Race {
     const k = this.kart;
     const who = this.remote.get(ev.id);
     const mine = ev.id === this.me;
-    if (!mine) this.hud.message(`${who ? who.name : '?'} : ${P.icon} ${P.name}`, 1600, 'small');
+    if (!mine) this.hud.message(`${who ? who.name : '?'} : ${P.name}`, 1600, 'small', P.icon);
     if (P.target === 'near' || ev.power === 'onde') {
       this.fx.burst(ev.x, ev.y + 1, ev.z, 40, { color: ev.power === 'gel' ? '#a8f0ff' : '#ffffff', size: 1.2, size1: 0.2, speed: 22, drag: 4, life: 0.6 });
     }
@@ -357,7 +360,7 @@ export class Race {
         this.renderHudItem();
         sfx.got();
       }
-      this.hud.message(`${powerById(res.power).icon} ${powerById(res.power).name} !`, 1200);
+      this.hud.message(`${powerById(res.power).name} !`, 1200, '', powerById(res.power).icon);
     });
   }
 
@@ -762,7 +765,7 @@ export class Race {
     if (this.rolling) {
       const keys = Object.keys(ITEMS);
       const i = Math.floor(performance.now() / 70) % keys.length;
-      $('hudItem').textContent = ITEMS[keys[i]].icon;
+      $('hudItem').innerHTML = ico(ITEMS[keys[i]].icon);
       $('hudItem').classList.add('rolling');
     }
     if (this.info.powers) this.hud.setPower(this.power ? powerById(this.power) : null, this.powerCd);
@@ -773,7 +776,7 @@ export class Race {
   renderHudItem() {
     const el = $('hudItem');
     el.classList.remove('rolling');
-    el.textContent = this.item ? ITEMS[this.item].icon : '';
+    el.innerHTML = this.item ? ico(ITEMS[this.item].icon) : '';
     $('hudItemCount').textContent = this.itemCount > 1 ? `×${this.itemCount}` : '';
     $('hudItemName').textContent = this.item ? ITEMS[this.item].name : '';
   }

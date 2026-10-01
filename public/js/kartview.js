@@ -4,6 +4,7 @@
 
 import * as THREE from './three.js';
 import { instance } from './assets.js';
+import { paintVehicle } from './paint.js';
 import { nameTexture, softDot, emoteTexture } from './textures.js';
 import { F } from './kart.js';
 import { CF, CAR_HALF } from './car3d.js';
@@ -50,7 +51,7 @@ export class KartView {
     this.emoteUntil = 0;
 
     if (opts.showName && opts.name) {
-      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTexture(opts.name, opts.tagColor || '#ffffff'), transparent: true, depthWrite: false, depthTest: false }));
+      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTexture(opts.name, opts.tagColor || '#ffffff', opts.tagIcon || null), transparent: true, depthWrite: false, depthTest: false }));
       tag.scale.set(4, 1, 1);
       tag.position.y = 3.2;
       tag.renderOrder = 10;
@@ -116,7 +117,7 @@ export class KartView {
     const size = model.userData.size;
     this.len = size.z;
     this.flame.position.set(0, size.y * 0.35, -size.z / 2 - 0.3);
-    const tint = this.color ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(this.color), 0.65) : null;
+    paintVehicle(model, v.model, this.color);
     model.traverse((o) => {
       // Nœud de roue le plus haut (ses enfants tournent avec lui).
       if (/wheel/i.test(o.name) && !(o.parent && /wheel/i.test(o.parent.name))) {
@@ -125,10 +126,7 @@ export class KartView {
       }
       if (o.isMesh) {
         const list = Array.isArray(o.material) ? o.material : [o.material];
-        let skip = false;
-        for (let p = o; p; p = p.parent) if (/wheel|character/i.test(p.name)) skip = true;
         for (const m of list) {
-          if (tint && !skip) m.color.multiply(tint);
           this.materials.push(m);
           m.userData.baseEmissive = m.emissive ? m.emissive.clone() : null;
           m.userData.baseOpacity = m.opacity;

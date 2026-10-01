@@ -1,6 +1,6 @@
 {
   "name": "speedkart",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "SpeedKart : course de karts 3D multijoueur entre potes, en pair-à-pair",
   "main": "electron/main.js",
   "private": true,

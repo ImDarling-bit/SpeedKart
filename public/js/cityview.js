@@ -4,6 +4,7 @@ import * as THREE from './three.js';
 import * as TX from './textures.js';
 import { models, instanceSync } from './assets.js';
 import { makeRng, hashString } from './util.js';
+import { iconImage } from './icons.js';
 
 const LOOKS = {
   city: {
@@ -90,21 +91,33 @@ function groundTexture(city, L) {
   return t;
 }
 
-function labelSprite(text, color = '#ffffff', bg = 'rgba(10,12,18,0.75)') {
+function labelSprite(text, color = '#ffffff', bg = 'rgba(10,12,18,0.75)', icon = null) {
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 128;
   const g = c.getContext('2d');
-  g.fillStyle = bg;
-  g.beginPath();
-  g.roundRect(8, 8, 496, 112, 24);
-  g.fill();
-  g.fillStyle = color;
-  g.font = '800 64px "Barlow Condensed", Arial, sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText(text, 256, 68);
-  const t = new THREE.CanvasTexture(c);
+  let t = null;
+  const draw = () => {
+    g.clearRect(0, 0, 512, 128);
+    g.fillStyle = bg;
+    g.beginPath();
+    g.roundRect(8, 8, 496, 112, 24);
+    g.fill();
+    g.font = '800 64px "Barlow Condensed", Arial, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    const tw = g.measureText(text).width;
+    const iw = icon ? 84 : 0;
+    const x0 = 256 - (tw + iw) / 2;
+    if (icon) {
+      const img = iconImage(icon, () => { draw(); if (t) t.needsUpdate = true; });
+      if (img.complete) g.drawImage(img, x0, 26, 76, 76);
+    }
+    g.fillStyle = color;
+    g.fillText(text, x0 + iw + tw / 2, 68);
+  };
+  draw();
+  t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
   s.scale.set(12, 3, 1);
@@ -253,13 +266,13 @@ export async function buildCityView(city) {
       m.castShadow = true;
       group.add(m);
     }
-    const sign = labelSprite('PRISON', '#ff5a5a');
+    const sign = labelSprite('PRISON', '#ff5a5a', 'rgba(10,12,18,0.75)', 'lock');
     sign.position.set(pr.c[0], 8, pr.c[2]);
     group.add(sign);
     const pad = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 0.2, 32), new THREE.MeshStandardMaterial({ color: '#ff3b3b', emissive: '#ff3b3b', emissiveIntensity: 0.8 }));
     pad.position.set(pr.button[0], 0.1, pr.button[2]);
     group.add(pad);
-    const key = labelSprite('🔓 LIBÉRER', '#ffffff', 'rgba(200,30,30,0.85)');
+    const key = labelSprite('LIBÉRER', '#ffffff', 'rgba(200,30,30,0.85)', 'unlock');
     key.position.set(pr.button[0], 4, pr.button[2]);
     group.add(key);
     animated.push((dt, t) => { pad.material.emissiveIntensity = 0.5 + Math.sin(t * 5) * 0.4; });
@@ -271,7 +284,7 @@ export async function buildCityView(city) {
     ring.rotation.x = Math.PI / 2;
     ring.position.set(h.p[0], 0.2, h.p[2]);
     group.add(ring);
-    const s = labelSprite('$ PLANQUE', '#1a1200', 'rgba(255,210,63,0.92)');
+    const s = labelSprite('PLANQUE', '#1a1200', 'rgba(255,210,63,0.92)', 'moneybag');
     s.position.set(h.p[0], 5, h.p[2]);
     group.add(s);
     animated.push((dt, t) => { ring.rotation.z += dt * 0.5; s.position.y = 5 + Math.sin(t * 2) * 0.3; });
@@ -295,7 +308,7 @@ export async function buildCityView(city) {
     // L'arche fait face au centre de la ville.
     arch.rotation.y = Math.abs(e.p[0]) > Math.abs(e.p[2]) ? Math.PI / 2 : 0;
     group.add(arch);
-    const s = labelSprite('SORTIE', '#ffffff', 'rgba(20,120,60,0.9)');
+    const s = labelSprite('SORTIE', '#ffffff', 'rgba(20,120,60,0.9)', 'door');
     s.position.set(e.p[0], 9.5, e.p[2]);
     group.add(s);
   }
@@ -309,7 +322,7 @@ export async function buildCityView(city) {
     sack.position.y = 1;
     const tie = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.35, 0.5, 8), sackMat);
     tie.position.y = 2.1;
-    const dollar = new THREE.Sprite(new THREE.SpriteMaterial({ map: TX.emoteTexture('💰'), transparent: true, depthWrite: false }));
+    const dollar = new THREE.Sprite(new THREE.SpriteMaterial({ map: TX.emoteTexture('moneybag'), transparent: true, depthWrite: false }));
     dollar.scale.set(2, 2, 1);
     dollar.position.y = 3.3;
     g2.add(sack, tie, dollar);
@@ -326,6 +339,7 @@ export async function buildCityView(city) {
     sky,
     fog: new THREE.Fog(L.fog[0], L.fog[1], L.fog[2]),
     background: new THREE.Color(L.fog[0]),
+    env: { top: L.sky[0], horizon: L.sky[1], ground: L.asphalt },
     setBags(mask) { bagMeshes.forEach((m, i) => { m.visible = mask[i] === '1'; }); },
     setExits(open) { for (const m of exitMats) { m.color.set(open ? '#38d96b' : '#ff3b3b'); m.emissive.set(open ? '#38d96b' : '#ff3b3b'); } },
     update(dt, t, camPos, target) {

@@ -196,6 +196,7 @@ async function rocketArena(group, animated, A) {
 
   return {
     sky, ball, marker, fog: new THREE.Fog('#141a40', 300, 1200), background: new THREE.Color('#141a40'),
+    env: { top: '#0b1440', horizon: '#5a5aa8', ground: '#1d2a50', sun: '#dfe6ff', sunPower: 5 },
     setPads(mask) { pads.forEach((p, i) => { p.orb.visible = mask[i] !== '0'; }); },
   };
 }
@@ -259,6 +260,7 @@ async function bumperArena(group, animated, A) {
 
   return {
     sky, fog: new THREE.Fog('#ffc7b0', 200, 700), background: new THREE.Color('#ffc7b0'),
+    env: { top: '#ff6a88', horizon: '#ffd8a8', ground: '#a46080', sun: '#fff0e0', sunPower: 7 },
     setTime(t) { bar.rotation.y = t * sw.speed; },
   };
 }
@@ -352,6 +354,7 @@ async function battleArena(group, animated, A) {
 
   return {
     sky, fog: new THREE.Fog('#dff1ff', 180, 700), background: new THREE.Color('#dff1ff'),
+    env: { top: '#56c1ff', horizon: '#fff7d6', ground: '#6a9a3a' },
     setBoxes(mask) { boxes.forEach((m, i) => { m.visible = mask[i] !== '0'; }); },
     boxes,
   };

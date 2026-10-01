@@ -4,15 +4,15 @@ import { clamp } from './util.js';
 import { KART_RADIUS } from './kart.js';
 
 export const ITEMS = {
-  mushroom: { name: 'Turbo', icon: '🍄' },
-  triple: { name: 'Triple turbo', icon: '🍄', count: 3 },
-  banana: { name: 'Banane', icon: '🍌' },
-  green: { name: 'Carapace verte', icon: '🟢' },
-  red: { name: 'Carapace rouge', icon: '🔴' },
-  bomb: { name: 'Bombe', icon: '💣' },
-  star: { name: 'Étoile', icon: '⭐' },
-  shield: { name: 'Bouclier', icon: '🛡️' },
-  lightning: { name: 'Éclair', icon: '⚡' },
+  mushroom: { name: 'Turbo', icon: 'mushroom' },
+  triple: { name: 'Triple turbo', icon: 'mushroom', count: 3 },
+  banana: { name: 'Banane', icon: 'banana' },
+  green: { name: 'Carapace verte', icon: 'shellGreen' },
+  red: { name: 'Carapace rouge', icon: 'shellRed' },
+  bomb: { name: 'Bombe', icon: 'bomb' },
+  star: { name: 'Étoile', icon: 'star' },
+  shield: { name: 'Bouclier', icon: 'shield' },
+  lightning: { name: 'Éclair', icon: 'lightning' },
 };
 
 // Probabilités selon la place : en tête on reçoit de quoi se défendre, derrière de quoi revenir.

@@ -10,13 +10,16 @@ import { TRACKS, trackById } from './data/tracks.js';
 import { THEMES } from './data/themes.js';
 import { VEHICLES, vehicleById } from './data/vehicles.js';
 import { KART_COLORS, colorHex, TEAM_COLORS } from './data/colors.js';
-import { HORN_KINDS } from './data/social.js';
+import { HORN_KINDS, EMOTES } from './data/social.js';
 import { CITIES, cityById } from './city.js';
 import { COPS_RULES } from './modes/copsgame.js';
 import { TrackPath } from './track.js';
 import { instance } from './assets.js';
 import { createTitleScene } from './title.js';
 import { showPodium } from './podium.js';
+import { ico, fillIcons, preloadIcons } from './icons.js';
+import { paintVehicle } from './paint.js';
+import { applyEnvironment, STUDIO_ENV } from './envmap.js';
 import { getSettings, setSetting, onSettings, ACTIONS, keysFor, bindKey, resetKeys, keyLabel, applyRenderer } from './settings.js';
 import { unlock, sfx, horn, HORN_NAMES, setVolume, getVolume, setEngineVolume, getEngineVolume } from './audio.js';
 import { formatTime } from './util.js';
@@ -27,16 +30,16 @@ const STAT_LABELS = { speed: 'Vitesse', accel: 'Accélération', handling: 'Mani
 const CATS = [...new Set(VEHICLES.map((v) => v.cat))];
 const STEPS = ['mode', 'vehicle', 'map', 'room'];
 const MODES = {
-  race: { name: 'Course', icon: '🏁', bg: 'linear-gradient(135deg,#2fd0ff,#0a3a5c)', desc: '14 circuits avec loopings, objets, dérapages. Pouvoirs et physique tamponneuse en option.', tag: '1 à 8 pilotes', start: 'Lancer la course' },
-  cops: { name: 'Police / Voleurs', icon: '🚓', bg: 'linear-gradient(135deg,#3b82ff,#ff3b3b)', desc: 'Quatre règles dans trois villes. Les rôles tournent à chaque manche.', tag: '2 à 8 joueurs', start: 'Lancer la poursuite' },
-  rocket: { name: 'Foot turbo', icon: '⚽', bg: 'linear-gradient(135deg,#3b82ff,#ff8a1f)', desc: 'Façon Rocket League : saut, double saut, turbo, murs. Bleus contre Orange.', tag: '1c1 à 4c4', start: 'Coup d’envoi' },
-  bumper: { name: 'Tamponneuses', icon: '💥', bg: 'linear-gradient(135deg,#ff4fa3,#5a2a8a)', desc: 'Éjecte ou retourne les autres. La gravité change toutes les 14 s.', tag: 'Chacun pour soi', start: 'Lancer les tamponneuses' },
-  battle: { name: 'Bataille de ballons', icon: '🎈', bg: 'linear-gradient(135deg,#ff4d6d,#ffd23f)', desc: 'Crève les ballons des autres avec tes objets. Dernier debout gagne.', tag: 'Chacun pour soi', start: 'Lancer la bataille' },
+  race: { name: 'Course', icon: 'flag', bg: 'linear-gradient(135deg,#2fd0ff,#0a3a5c)', desc: '14 circuits avec loopings, objets, dérapages. Pouvoirs et physique tamponneuse en option.', tag: '1 à 8 pilotes', start: 'Lancer la course' },
+  cops: { name: 'Police / Voleurs', icon: 'policecar', bg: 'linear-gradient(135deg,#3b82ff,#ff3b3b)', desc: 'Quatre règles dans trois villes. Les rôles tournent à chaque manche.', tag: '2 à 8 joueurs', start: 'Lancer la poursuite' },
+  rocket: { name: 'Foot turbo', icon: 'ball', bg: 'linear-gradient(135deg,#3b82ff,#ff8a1f)', desc: 'Façon Rocket League : saut, double saut, turbo, murs. Bleus contre Orange.', tag: '1c1 à 4c4', start: 'Coup d’envoi' },
+  bumper: { name: 'Tamponneuses', icon: 'burst', bg: 'linear-gradient(135deg,#ff4fa3,#5a2a8a)', desc: 'Éjecte ou retourne les autres. La gravité change toutes les 14 s.', tag: 'Chacun pour soi', start: 'Lancer les tamponneuses' },
+  battle: { name: 'Bataille de ballons', icon: 'balloon', bg: 'linear-gradient(135deg,#ff4d6d,#ffd23f)', desc: 'Crève les ballons des autres avec tes objets. Dernier debout gagne.', tag: 'Chacun pour soi', start: 'Lancer la bataille' },
 };
 const ARENA_INFO = {
-  rocket: { icon: '⚽', name: 'Stade Turbo', text: 'Le terrain grandit avec le nombre de joueurs. Roule sur les murs, saute deux fois pour une figure, et vise les pastilles orange pour remplir ton turbo.' },
-  bumper: { icon: '💥', name: 'Plateau Tamponneur', text: 'Une plateforme flottante sans barrières, qui grandit avec le nombre de joueurs. +1 par adversaire retourné, +2 par éjection.' },
-  battle: { icon: '🎈', name: 'Arène des Ballons', text: 'Enceinte avec plateau central, rampes et piliers. Ramasse les boîtes pour avoir des objets.' },
+  rocket: { icon: 'ball', name: 'Stade Turbo', text: 'Le terrain grandit avec le nombre de joueurs. Roule sur les murs, saute deux fois pour une figure, et vise les pastilles orange pour remplir ton turbo.' },
+  bumper: { icon: 'burst', name: 'Plateau Tamponneur', text: 'Une plateforme flottante sans barrières, qui grandit avec le nombre de joueurs. +1 par adversaire retourné, +2 par éjection.' },
+  battle: { icon: 'balloon', name: 'Arène des Ballons', text: 'Enceinte avec plateau central, rampes et piliers. Ramasse les boîtes pour avoir des objets.' },
 };
 const TIPS = [
   'Maintiens le dérapage dans les virages : bleu, orange puis violet, relâche pour un mini-turbo.',
@@ -284,13 +287,13 @@ function renderModes(host) {
   $('modeHint').textContent = host ? '' : 'Choisi par l’hôte.';
   $('modeGrid').innerHTML = Object.entries(MODES).map(([id, M]) => `
     <button class="mode ${mode === id ? 'on' : ''}" data-mode="${id}" style="--mode-bg:${M.bg}" ${host ? '' : 'disabled'}>
-      <span class="mode-icon">${M.icon}</span><span class="mode-name">${M.name}</span><span class="mode-desc">${M.desc}</span><span class="mode-tag">${M.tag}</span>
+      <span class="mode-icon">${ico(M.icon)}</span><span class="mode-name">${M.name}</span><span class="mode-desc">${M.desc}</span><span class="mode-tag">${M.tag}</span>
     </button>`).join('');
   const cops = mode === 'cops';
   $('copsRules').classList.toggle('hidden', !cops);
   if (cops) {
     $('copsRules').innerHTML = `<h3>Règle</h3>${Object.entries(COPS_RULES).map(([id, R]) => `
-      <button class="sub ${state.settings.copsRule === id ? 'on' : ''}" data-rule="${id}" ${host ? '' : 'disabled'}><b>${R.icon} ${R.name}</b><span>${R.desc}</span></button>`).join('')}`;
+      <button class="sub ${state.settings.copsRule === id ? 'on' : ''}" data-rule="${id}" ${host ? '' : 'disabled'}><b>${ico(R.icon)}${R.name}</b><span>${R.desc}</span></button>`).join('')}`;
   }
 }
 
@@ -310,7 +313,7 @@ function renderVehicles() {
 }
 
 function renderProfile(me) {
-  $('colorRow').innerHTML = KART_COLORS.map((c) => `<button class="swatch-btn ${c.id === myColor ? 'on' : ''}" data-color="${c.id}" title="${c.name}" style="${c.hex ? `background:${c.hex}` : ''}">${c.hex ? '' : '✕'}</button>`).join('');
+  $('colorRow').innerHTML = KART_COLORS.map((c) => `<button class="swatch-btn ${c.id === myColor ? 'on' : ''}" data-color="${c.id}" title="${c.name}" style="${c.hex ? `background:${c.hex}` : ''}">${c.hex ? '' : ico('close')}</button>`).join('');
   $('hornSelect').innerHTML = HORN_KINDS.map((h) => `<option value="${h}" ${h === myHorn ? 'selected' : ''}>${HORN_NAMES[h]}</option>`).join('');
   const team = me ? me.team : 'auto';
   document.querySelectorAll('[data-team]').forEach((b) => b.classList.toggle('on', b.dataset.team === team));
@@ -333,21 +336,21 @@ function renderMap(host) {
       return `<button class="track ${st.track === id ? 'on' : ''}" data-track="${id}" ${host ? '' : 'disabled'} title="${escapeHtml(t.desc)}">
         <div class="track-map"><img src="${trackThumb(t)}" alt=""></div>
         <div class="track-name">${escapeHtml(t.name)}</div>
-        <div class="track-diff">${'★'.repeat(t.difficulty)}${'☆'.repeat(5 - t.difficulty)}${loops}</div></button>`;
+        <div class="track-diff"><span class="stars">${ico('star').repeat(t.difficulty)}${ico('starEmpty').repeat(5 - t.difficulty)}</span>${loops}</div></button>`;
     }).join('');
     const sel = st.track === 'random' ? null : trackById(st.track);
     $('trackDesc').textContent = sel ? sel.desc : `Un circuit tiré au sort parmi les ${TRACKS.length}.`;
   } else if (mode === 'cops') {
-    const icons = { centre: '🏙️', usine: '🏭', port: '⚓' };
+    const icons = { centre: 'city', usine: 'factory', port: 'anchor' };
     $('cityGrid').innerHTML = [...CITIES.map((c) => `
       <button class="city ${st.city === c.id ? 'on' : ''}" data-city="${c.id}" ${host ? '' : 'disabled'}>
-        <div class="track-map">${icons[c.id]}</div><div class="track-name">${c.name}</div><div class="track-diff">${c.desc}</div></button>`),
+        <div class="track-map">${ico(icons[c.id], 'xl')}</div><div class="track-name">${c.name}</div><div class="track-diff">${c.desc}</div></button>`),
     `<button class="city ${st.city === 'random' ? 'on' : ''}" data-city="random" ${host ? '' : 'disabled'}><div class="track-map random">?</div><div class="track-name">Aléatoire</div><div class="track-diff">Surprise</div></button>`].join('');
     const R = COPS_RULES[st.copsRule];
-    $('trackDesc').textContent = `${R.icon} ${R.name} : ${R.desc}`;
+    $('trackDesc').innerHTML = `${ico(R.icon)}<span>${R.name} : ${R.desc}</span>`;
   } else {
     const A = ARENA_INFO[mode];
-    $('arenaCard').innerHTML = `<span class="big-icon">${A.icon}</span><div><h3>${A.name}</h3><p>${A.text}</p></div>`;
+    $('arenaCard').innerHTML = `<span class="big-icon">${ico(A.icon)}</span><div><h3>${A.name}</h3><p>${A.text}</p></div>`;
     $('trackDesc').textContent = '';
   }
   const opt = (group, value) => document.querySelectorAll(`[data-set="${group}"]`).forEach((b) => {
@@ -367,7 +370,7 @@ function renderRoom(host) {
     const team = mode === 'rocket' && p.team !== 'auto' ? `<span class="team-dot" style="background:${TEAM_COLORS[p.team]}"></span>` : '';
     return `<li class="${p.id === s.you ? 'me' : ''}">
       <img src="assets/previews/${v.id}.png" alt="" onerror="this.remove()">
-      <div class="pl"><b>${p.isHost ? '👑 ' : ''}${team}${escapeHtml(p.name)}</b><small>${col ? `<i class="swatch" style="background:${col}"></i>` : ''}${escapeHtml(v.name)}</small></div>
+      <div class="pl"><b>${p.isHost ? ico('crown') : ''}${team}${escapeHtml(p.name)}</b><small>${col ? `<i class="swatch" style="background:${col}"></i>` : ''}${escapeHtml(v.name)}</small></div>
       <span class="pts">${p.score}</span></li>`;
   });
   const free = Math.max(0, 8 - s.players.length);
@@ -377,19 +380,19 @@ function renderRoom(host) {
 
   const st = s.settings;
   const M = MODES[mode];
-  const rows = [['Mode', `${M.icon} ${M.name}`]];
+  const rows = [['Mode', M.name, M.icon]];
   if (mode === 'race') {
     rows.push(['Circuit', st.track === 'random' ? 'Aléatoire' : trackById(st.track).name], ['Tours', st.laps], ['Cylindrée', `${st.cc}cc`],
       ['Objets', st.items ? 'Oui' : 'Non'], ['Pouvoirs', st.powers ? 'Oui' : 'Non'], ['Physique tamponneuse', st.chaos ? 'Oui' : 'Non']);
   } else if (mode === 'cops') {
-    rows.push(['Règle', `${COPS_RULES[st.copsRule].icon} ${COPS_RULES[st.copsRule].name}`], ['Ville', st.city === 'random' ? 'Aléatoire' : cityById(st.city).name], ['Manche', `${st.matchTime} min`]);
+    rows.push(['Règle', COPS_RULES[st.copsRule].name, COPS_RULES[st.copsRule].icon], ['Ville', st.city === 'random' ? 'Aléatoire' : cityById(st.city).name], ['Manche', `${st.matchTime} min`]);
   } else {
     rows.push(['Durée', `${st.matchTime} min`]);
     if (mode === 'rocket') rows.push(['Équipes', `${st.teamSize} contre ${st.teamSize}`]);
     if (mode === 'battle') rows.push(['Ballons', st.balloons], ['Pouvoirs', st.powers ? 'Oui' : 'Non']);
   }
   rows.push(['Bots', st.bots ? ['Facile', 'Normal', 'Difficile'][st.difficulty - 1] : 'Aucun']);
-  $('summary').innerHTML = `<h3>Partie</h3><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(String(v))}</dd>`).join('')}</dl>`;
+  $('summary').innerHTML = `<h3>Partie</h3><dl>${rows.map(([k, v, icon]) => `<dt>${k}</dt><dd>${icon ? ico(icon) : ''}${escapeHtml(String(v))}</dd>`).join('')}</dl>`;
 
   const standings = [...s.players.map((p) => ({ ...p, bot: false })), ...s.bots.map((b) => ({ ...b, bot: true }))]
     .filter((p) => p.score > 0).sort((a, b) => b.score - a.score);
@@ -542,9 +545,9 @@ async function renderResults() {
   $('resTrack').textContent = mode === 'race' ? trackById(g.track).name : mode === 'cops' ? `${COPS_RULES[g.rule].name} · ${cityById(g.city).name}` : MODES[mode].name;
   const detail = (r) => {
     if (mode === 'race') return r.time != null ? formatTime(r.time) : 'non classé';
-    if (mode === 'rocket') return `${r.goals ? `⚽ ${r.goals} · ` : ''}${r.score} pts`;
-    if (mode === 'battle') return `${'🎈'.repeat(r.balloons || 0) || '💀'} · ${r.pops} crevé${r.pops > 1 ? 's' : ''}`;
-    if (mode === 'cops') return `${r.score} pts · ${r.arrests} arrest.${r.deposited ? ` · 💰${r.deposited}` : ''}`;
+    if (mode === 'rocket') return `${r.goals ? `${ico('ball')}${r.goals} · ` : ''}${r.score} pts`;
+    if (mode === 'battle') return `${ico('balloon').repeat(r.balloons || 0) || ico('skull')} · ${r.pops} crevé${r.pops > 1 ? 's' : ''}`;
+    if (mode === 'cops') return `${r.score} pts · ${r.arrests} arrest.${r.deposited ? ` · ${ico('moneybag')}${r.deposited}` : ''}`;
     return `${r.score} pts`;
   };
   $('resList').innerHTML = res.map((r) => `
@@ -616,12 +619,13 @@ const preview = (() => {
     const rim = new THREE.PointLight('#2fd0ff', 30, 14, 1.5);
     rim.position.set(-4, 2, -3);
     scene.add(rim);
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.2, 0.12, 64), new THREE.MeshStandardMaterial({ color: '#141922', metalness: 0.6, roughness: 0.35 }));
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.2, 0.12, 64), new THREE.MeshStandardMaterial({ color: '#141922', metalness: 0.3, roughness: 0.55 }));
     disc.position.y = -0.06;
     disc.receiveShadow = true;
     scene.add(disc);
     holder = new THREE.Group();
     scene.add(holder);
+    applyEnvironment(r, scene, STUDIO_ENV, { intensity: 0.8, hemiScale: 0.5 });
   }
   function loop() {
     if (!running) return;
@@ -651,14 +655,8 @@ const preview = (() => {
       const my = ++token;
       const obj = await instance(v.model, { length: Math.min(4.6, v.len * 1.3), cloneMaterials: true });
       if (my !== token) return;
-      const tint = color ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(color), 0.65) : null;
-      obj.traverse((o) => {
-        if (!o.isMesh) return;
-        o.castShadow = true;
-        if (!tint) return;
-        for (let p = o; p; p = p.parent) if (/wheel|character/i.test(p.name)) return;
-        (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.color.multiply(tint));
-      });
+      paintVehicle(obj, v.model, color);
+      obj.traverse((o) => { if (o.isMesh) o.castShadow = true; });
       holder.clear();
       holder.add(obj);
     },
@@ -717,7 +715,7 @@ function renderHelp() {
     <tr><td colspan="2" class="sec">Course</td></tr>${rows('race')}
     <tr><td colspan="2" class="sec">Arènes et police</td></tr>${rows('car')}
     <tr><td colspan="2" class="sec">Partout</td></tr>${rows('common')}
-    <tr><th>Emotes</th><td><kbd>1</kbd>😂 <kbd>2</kbd>😡 <kbd>3</kbd>👍 <kbd>4</kbd>GG <kbd>5</kbd>😱 <kbd>6</kbd>🔥</td></tr>
+    <tr><th>Emotes</th><td>${EMOTES.map((e, i) => `<kbd>${i + 1}</kbd>${ico(e)}`).join(' ')}</td></tr>
     <tr><th>Pause</th><td><kbd>Échap</kbd> · manette <kbd>Start</kbd></td></tr>
     <tr><td colspan="2" class="sec">Manette</td></tr>
     <tr><th>Course</th><td>A accélère, B freine, RB dérape, LB objet, Y regarde derrière</td></tr>
@@ -803,6 +801,8 @@ function initSettings() {
   });
 }
 
+fillIcons();
+preloadIcons();
 initTitle();
 initLobby();
 initResults();

@@ -15,23 +15,23 @@ import { sub, len, norm, qYaw } from '../vec.js';
 import { makeRng } from '../util.js';
 
 export const COPS_RULES = {
-  heist: { name: 'Braquage', icon: '💰', desc: 'Les voleurs rapportent l’argent à leur planque. Arrêtés : prison, sauf si un complice les libère.' },
-  hunt: { name: 'Chasse à l’homme', icon: '🎯', desc: 'La police doit arrêter tous les voleurs avant la fin du temps.' },
-  infect: { name: 'Contamination', icon: '🦠', desc: 'Un voleur arrêté devient policier. Le dernier voleur libre gagne.' },
-  escape: { name: 'Évasion', icon: '🚪', desc: 'Les voleurs doivent rejoindre une sortie de la ville, ouverte au bout de 20 s.' },
+  heist: { name: 'Braquage', icon: 'moneybag', desc: 'Les voleurs rapportent l’argent à leur planque. Arrêtés : prison, sauf si un complice les libère.' },
+  hunt: { name: 'Chasse à l’homme', icon: 'target', desc: 'La police doit arrêter tous les voleurs avant la fin du temps.' },
+  infect: { name: 'Contamination', icon: 'virus', desc: 'Un voleur arrêté devient policier. Le dernier voleur libre gagne.' },
+  escape: { name: 'Évasion', icon: 'door', desc: 'Les voleurs doivent rejoindre une sortie de la ville, ouverte au bout de 20 s.' },
 };
 
 // Gadgets (3 par camp) : touches E, R, F (manette LB, croix haut, Y).
 export const GADGETS = {
   cop: [
-    { id: 'sirene', name: 'Sirène', icon: '🚨', cd: 14, desc: 'Turbo et voleurs révélés sur la carte pendant 5 s.' },
-    { id: 'herse', name: 'Herse', icon: '📌', cd: 18, desc: 'Une herse derrière toi : les voleurs qui roulent dessus partent en toupie.' },
-    { id: 'cones', name: 'Barrage', icon: '🚧', cd: 20, desc: 'Une rangée de cônes derrière toi.' },
+    { id: 'sirene', name: 'Sirène', icon: 'siren', cd: 14, desc: 'Turbo et voleurs révélés sur la carte pendant 5 s.' },
+    { id: 'herse', name: 'Herse', icon: 'spikes', cd: 18, desc: 'Une herse derrière toi : les voleurs qui roulent dessus partent en toupie.' },
+    { id: 'cones', name: 'Barrage', icon: 'cone', cd: 20, desc: 'Une rangée de cônes derrière toi.' },
   ],
   thief: [
-    { id: 'nitro', name: 'Nitro', icon: '🔥', cd: 10, desc: 'Une grosse accélération.' },
-    { id: 'fumee', name: 'Fumigène', icon: '💨', cd: 16, desc: 'Un nuage de fumée qui aveugle les poursuivants.' },
-    { id: 'huile', name: 'Huile', icon: '🛢️', cd: 14, desc: 'Une flaque d’huile qui fait déraper.' },
+    { id: 'nitro', name: 'Nitro', icon: 'fire', cd: 10, desc: 'Une grosse accélération.' },
+    { id: 'fumee', name: 'Fumigène', icon: 'smoke', cd: 16, desc: 'Un nuage de fumée qui aveugle les poursuivants.' },
+    { id: 'huile', name: 'Huile', icon: 'oil', cd: 14, desc: 'Une flaque d’huile qui fait déraper.' },
   ],
 };
 

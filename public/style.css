@@ -161,7 +161,7 @@ body.is-host .host-note { display: none; }
 .mode.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .mode.on::before { opacity: 0.32; }
 .mode:disabled:not(.on) { opacity: 0.45; }
-.mode-icon { font-size: 2.6rem; }
+.mode-icon { font-size: 3.2rem; line-height: 1; }
 .mode-name { font-family: var(--title); font-size: 1.6rem; font-weight: 700; text-transform: uppercase; }
 .mode-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.45; }
 .mode-tag { margin-top: auto; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -516,3 +516,27 @@ body.tuto main { max-width: 820px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
 .faq details p { margin: 0.5rem 0 0; line-height: 1.5; color: var(--muted); }
 pre.code { background: rgba(0, 0, 0, 0.45); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.88rem; line-height: 1.5; }
 .tuto-foot { text-align: center; margin-top: 2rem; }
+
+/* ------------------------------------------------------------ icônes (js/icons.js) */
+.ico { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.22em; margin-right: 0.3em; flex: none; pointer-events: none; user-select: none; }
+.mode-icon .ico, .arena-card .big-icon .ico, .item-slot .ico, .power-slot .ico, .gadget .g-icon .ico, .city .track-map .ico { width: 1em; height: 1em; margin: 0; vertical-align: middle; }
+.g-icon { display: grid; place-items: center; }
+.city .track-map .ico { width: 3.4rem; height: 3.4rem; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4)); }
+.track-diff .stars { display: inline-flex; gap: 1px; vertical-align: -0.15em; }
+.track-diff .stars .ico { width: 0.95em; height: 0.95em; margin: 0; }
+.icon-btn .ico { width: 20px; height: 20px; margin: 0; }
+.hud-pause .ico { width: 1.5em; height: 1.5em; margin: 0; }
+.gadget .g-icon .ico { width: 1.35em; height: 1.35em; }
+.touch button .ico { width: 1.6em; height: 1.6em; margin: 0; vertical-align: middle; }
+.swatch-btn .ico { width: 14px; height: 14px; margin: 0; opacity: 0.7; }
+.hud-center .ico.big { width: 1em; height: 1em; vertical-align: -0.12em; margin-right: 0.22em; }
+.hud-msg .msg .ico { width: 1.25em; height: 1.25em; }
+.hud-ranks li span .ico { width: 1.15em; height: 1.15em; margin: 0 0.3em 0 0; }
+.hud-ranks li span .ico:last-child:not(:first-child) { margin: 0 0 0 0.3em; }
+.hud-ranks li em .ico { width: 1.05em; height: 1.05em; margin: 0 1px; }
+.cops-role .ico { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
+.res-list .tm .ico, #resList .tm .ico { width: 1.1em; height: 1.1em; margin: 0 1px; }
+.keys .ico { width: 1.4em; height: 1.4em; margin: 0 0.5em 0 0.2em; }
+.city[data-city='centre'] .track-map { background: radial-gradient(circle at 50% 120%, #2f7bff55, transparent 70%), linear-gradient(160deg, #1b2a4a, #0d1424); }
+.city[data-city='usine'] .track-map { background: radial-gradient(circle at 50% 120%, #ffb13d55, transparent 70%), linear-gradient(160deg, #3a2f22, #15110d); }
+.city[data-city='port'] .track-map { background: radial-gradient(circle at 50% 120%, #2fd0ff55, transparent 70%), linear-gradient(160deg, #123848, #0a1820); }

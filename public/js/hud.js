@@ -2,6 +2,7 @@
 // pouvoir, gadgets, bandeau police/voleurs, classement, mini-carte, commandes tactiles.
 
 import { getSettings } from './settings.js';
+import { ico, iconImage } from './icons.js';
 
 export { EMOTES } from './data/social.js';
 
@@ -25,7 +26,7 @@ export class Hud {
     $('hudPower').classList.add('hidden');
   }
 
-  setTitle(text) { $('hudTrack').textContent = text; }
+  setTitle(text, icon = null) { $('hudTrack').innerHTML = `${icon ? ico(icon) : ''}${escapeHtml(text)}`; }
 
   showTouch(scheme) {
     const pad = $('touchPad');
@@ -36,18 +37,19 @@ export class Hud {
     return pad;
   }
 
-  bigText(text, cls, ms) {
+  // icon : nom d'une icône affichée devant le texte.
+  bigText(text, cls, ms, icon) {
     const el = $('hudCenter');
-    el.textContent = text;
+    el.innerHTML = `${icon ? ico(icon, 'big') : ''}<span>${escapeHtml(text)}</span>`;
     el.className = `hud-center show ${cls}`;
     clearTimeout(this.bigTimer);
     this.bigTimer = setTimeout(() => { el.className = 'hud-center'; }, ms || (cls === 'finish' ? 3500 : 900));
   }
 
-  message(text, ms = 1500, cls = '') {
+  message(text, ms = 1500, cls = '', icon = null) {
     const el = document.createElement('div');
     el.className = `msg ${cls}`;
-    el.textContent = text;
+    el.innerHTML = `${icon ? ico(icon) : ''}<span>${escapeHtml(text)}</span>`;
     $('hudMsg').appendChild(el);
     this.messages.push({ el, until: performance.now() + ms });
     while (this.messages.length > 4) this.messages.shift().el.remove();
@@ -77,9 +79,9 @@ export class Hud {
   setPower(P, cd) {
     const el = $('hudPower');
     const icon = P ? P.icon : '';
-    if (el.dataset.icon !== icon) {
-      el.dataset.icon = icon;
-      $('hudPowerIcon').textContent = icon;
+    if (el.dataset.pw !== icon) {
+      el.dataset.pw = icon;
+      $('hudPowerIcon').innerHTML = ico(icon);
       $('hudPowerName').textContent = P ? P.name : '';
       el.title = P ? P.desc : '';
     }
@@ -90,7 +92,7 @@ export class Hud {
   // Police contre voleurs : rôle, manche, objectif, argent, attente du départ.
   setRole(role, objective) {
     const el = $('hudRole');
-    el.textContent = role === 'cop' ? '🚓 POLICE' : '🦹 VOLEUR';
+    el.innerHTML = role === 'cop' ? `${ico('policecar')}POLICE` : `${ico('thief')}VOLEUR`;
     el.dataset.role = role;
     $('hudObjective').textContent = objective || '';
   }
@@ -101,7 +103,7 @@ export class Hud {
     $('hudMoney').classList.toggle('hidden', !heist);
     if (heist) {
       $('hudMoneyBar').style.width = `${Math.min(100, (money / Math.max(1, target)) * 100)}%`;
-      $('hudMoneyText').textContent = `💰 ${money} / ${target}${bags ? ` · tu portes ${bags}` : ''}`;
+      $('hudMoneyText').innerHTML = `${ico('moneybag')} ${money} / ${target}${bags ? ` · tu portes ${bags}` : ''}`;
     }
     $('hudWait').textContent = wait ? `Départ dans ${wait} s : les voleurs prennent de l’avance` : '';
   }
@@ -109,16 +111,16 @@ export class Hud {
   // Gadgets : [{ icon, name, key, cd }]
   setGadgets(list) {
     const html = list.map((g) => `<div class="gadget${g.cd > 0 ? '' : ' ready'}" title="${escapeHtml(g.desc || '')}">
-      <span class="g-icon">${g.icon}</span>${g.cd > 0 ? `<b>${Math.ceil(g.cd)}</b>` : ''}<kbd>${g.key}</kbd><small>${escapeHtml(g.name)}</small></div>`).join('');
+      <span class="g-icon">${ico(g.icon)}</span>${g.cd > 0 ? `<b>${Math.ceil(g.cd)}</b>` : ''}<kbd>${g.key}</kbd><small>${escapeHtml(g.name)}</small></div>`).join('');
     if (html !== this.gadgetsHtml) {
       $('hudGadgets').innerHTML = html;
       this.gadgetsHtml = html;
     }
   }
 
-  // list : [{ rank, name, color, me, done, extra }]
+  // list : [{ rank, name, color, me, done, extra, icon, badges: [noms d'icônes] }]
   ranks(list) {
-    const html = list.map((r) => `<li${r.me ? ' class="me"' : ''}><b>${r.rank}</b><i style="background:${r.color}"></i><span>${escapeHtml(r.name)}${r.done ? ' 🏁' : ''}</span>${r.extra ? `<em>${escapeHtml(r.extra)}</em>` : ''}</li>`).join('');
+    const html = list.map((r) => `<li${r.me ? ' class="me"' : ''}><b>${r.rank}</b><i style="background:${r.color}"></i><span>${r.icon ? ico(r.icon) : ''}${escapeHtml(r.name)}${r.done ? ico('flag') : ''}</span>${r.extra || r.badges ? `<em>${(r.badges || []).map((b) => ico(b)).join('')}${r.extra ? escapeHtml(r.extra) : ''}</em>` : ''}</li>`).join('');
     if (html !== this.ranksHtml) {
       $('hudRanks').innerHTML = html;
       this.ranksHtml = html;
@@ -198,7 +200,11 @@ export class Hud {
       g.arc(px, py, 8, 0, Math.PI * 2);
       g.fill();
       g.fillStyle = '#111';
-      g.fillText(m.icon, px, py + 1);
+      if (m.img) {
+        // Si l'image n'est pas encore prête, on redessine le fond à son chargement.
+        const img = iconImage(m.img, () => this.prepareCityMap(W, D, blocks, marks));
+        if (img.complete) g.drawImage(img, px - 7, py - 7, 14, 14);
+      } else g.fillText(m.icon, px, py + 1);
     }
     this.mapBg = bg;
   }

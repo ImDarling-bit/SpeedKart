@@ -56,7 +56,7 @@
       <div class="lobby-meta">
         <div class="code-chip" id="codeChip"><small>CODE</small><strong id="lobbyCode"></strong></div>
         <button class="btn btn-ghost btn-sm" id="shareBtn">Inviter</button>
-        <button class="icon-btn" data-open="settingsModal" aria-label="Paramètres">⚙</button>
+        <button class="icon-btn" data-open="settingsModal" aria-label="Paramètres" data-icon="gear"></button>
         <button class="btn btn-ghost btn-sm" data-action="leave">Quitter</button>
       </div>
     </header>
@@ -210,7 +210,7 @@
       <div class="hud-wrong hidden" id="hudWrong">MAUVAIS SENS</div>
       <div class="hud-ink" id="hudInk"></div>
       <div class="hud-flash" id="hudFlash"></div>
-      <button class="hud-pause" id="pauseBtn" aria-label="Pause">❚❚</button>
+      <button class="hud-pause" id="pauseBtn" aria-label="Pause" data-icon="pause"></button>
       <div class="hud-loading" id="hudLoading">
         <div class="load-title" id="hudLoadText"></div>
         <div class="load-bar"><i id="hudLoadBar"></i></div>
@@ -219,16 +219,16 @@
       <div class="touch hidden" id="touchPad">
         <div class="touch-left">
           <div class="stick" data-stick><i></i></div>
-          <div class="arrows"><button data-touch="left">◀</button><button data-touch="right">▶</button></div>
+          <div class="arrows"><button data-touch="left" data-icon="left"></button><button data-touch="right" data-icon="right"></button></div>
         </div>
         <div class="touch-right">
-          <button data-touch="power" class="t-sm t-power">🎲</button>
+          <button data-touch="power" class="t-sm t-power" data-icon="dice"></button>
           <button data-touch="g3" class="t-sm s-cops">F</button>
-          <button data-touch="item" class="t-md">🎁</button>
-          <button data-touch="boost" class="t-md s-car">🔥</button>
+          <button data-touch="item" class="t-md" data-icon="gift"></button>
+          <button data-touch="boost" class="t-md s-car" data-icon="fire"></button>
           <button data-touch="drift" class="t-lg s-race">DRIFT</button>
           <button data-touch="jump" class="t-lg s-car">SAUT</button>
-          <button data-touch="brake" class="t-sm">▼</button>
+          <button data-touch="brake" class="t-sm" data-icon="down"></button>
         </div>
       </div>
     </div>
@@ -267,7 +267,7 @@
     <div class="modal">
       <div class="modal-head">
         <h2 id="settingsTitle">Paramètres</h2>
-        <button class="icon-btn" data-close aria-label="Fermer">✕</button>
+        <button class="icon-btn" data-close aria-label="Fermer" data-icon="close"></button>
       </div>
       <nav class="tabs" id="settingsTabs">
         <button data-tab="graphics" class="on">Graphismes</button>
@@ -307,7 +307,7 @@
     <div class="modal">
       <div class="modal-head">
         <h2 id="helpTitle">Commandes</h2>
-        <button class="icon-btn" data-close aria-label="Fermer">✕</button>
+        <button class="icon-btn" data-close aria-label="Fermer" data-icon="close"></button>
       </div>
       <div id="helpBody"></div>
       <p><a href="tuto.html" target="_blank" rel="noopener">Le tuto complet</a></p>

@@ -5,6 +5,8 @@ import * as THREE from './three.js';
 import { instance } from './assets.js';
 import { vehicleById } from './data/vehicles.js';
 import { getSettings } from './settings.js';
+import { paintVehicle } from './paint.js';
+import { applyEnvironment, STUDIO_ENV } from './envmap.js';
 
 const ACCENT = '#2fd0ff';
 
@@ -77,6 +79,8 @@ export function createTitleScene(canvas) {
     streaks.push(m);
   }
 
+  applyEnvironment(renderer, scene, STUDIO_ENV, { intensity: 0.8, hemiScale: 0.6 });
+
   const hero = new THREE.Group();
   hero.position.y = 0.2;
   scene.add(hero);
@@ -90,7 +94,8 @@ export function createTitleScene(canvas) {
 
   async function placeSide() {
     for (const [id, x, yaw] of [['police', -6.2, 0.7], ['race-future', 6.2, -0.7]]) {
-      const o = await instance(vehicleById(id).model, { length: 4 });
+      const o = await instance(vehicleById(id).model, { length: 4, cloneMaterials: true });
+      paintVehicle(o, vehicleById(id).model, null);
       o.position.set(x, 0, -2.5);
       o.rotation.y = yaw;
       o.traverse((m) => { if (m.isMesh) m.castShadow = true; });
@@ -139,15 +144,8 @@ export function createTitleScene(canvas) {
       const v = vehicleById(vehicleId);
       const obj = await instance(v.model, { length: 4.4, cloneMaterials: true });
       if (my !== token) return;
-      if (color) {
-        const tint = new THREE.Color(1, 1, 1).lerp(new THREE.Color(color), 0.65);
-        obj.traverse((o) => {
-          if (!o.isMesh) return;
-          o.castShadow = true;
-          for (let p = o; p; p = p.parent) if (/wheel|character/i.test(p.name)) return;
-          (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.color.multiply(tint));
-        });
-      } else obj.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+      paintVehicle(obj, v.model, color);
+      obj.traverse((o) => { if (o.isMesh) o.castShadow = true; });
       hero.clear();
       hero.add(obj);
     },

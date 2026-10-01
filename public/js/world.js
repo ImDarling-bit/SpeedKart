@@ -515,6 +515,10 @@ export async function buildWorld(T, def, theme, onProgress) {
     sun,
     boxMeshes,
     background: new THREE.Color(theme.fog[0]),
+    env: {
+      top: theme.sky[0], horizon: theme.sky[1], ground: theme.ground || theme.road.base,
+      sun: theme.night ? '#9fb0ff' : '#fff1dd', sunPower: theme.night ? 2 : 8, sunDir: [-0.5, 1, 0.35],
+    },
     // mask : chaîne de '1' (présente) / '0' (ramassée)
     setBoxes(mask) {
       for (let i = 0; i < boxMeshes.length; i++) {
